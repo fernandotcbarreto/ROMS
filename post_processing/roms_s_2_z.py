@@ -9,10 +9,10 @@ from matplotlib import dates
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
    
-    
-avgfile=Dataset('HIS_FILE_20200809_5D0-20200816_5D0_fore_NEST_1_NEST_2.nc')
+     
+avgfile=Dataset('HIS_FILE_20200421_5D0-20200428_5D0_hind_correct_year_vit_nud_COR_0001.nc')
 
-fname_grd = 'grid_rotated_SUL_2_NEST2_smaler.nc'
+fname_grd = 'vit_1.nc'
 
 ## Load ROMS grid.
 grd = Dataset(fname_grd)
@@ -127,8 +127,8 @@ figdates=dates.num2date(begindate+time)
 #figdates[tim].strftime("%A/%b - %-I %p" ) 
 #figdates[tim].strftime("%m%d - %-I %p")
 
-tim=-1
-lay=25
+tim=0
+lay=15
 
 sp=2
 
@@ -142,10 +142,13 @@ vv=vp
 
 val=np.sqrt((uu**2)+(vv**2))
 
-a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=1.1)
+a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=1)
 #a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=val.max())
+cnt=plt.contour(x_roms,y_roms,h_roms,levels=[200],colors=('red'))
 plt.quiver(x_roms[0:-1:sp, 0:-1:sp],y_roms[0:-1:sp, 0:-1:sp],uu[0:-1:sp, 0:-1:sp], vv[0:-1:sp, 0:-1:sp])
-plt.text(-49,-28,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
+#plt.text(-49,-28,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
+#        bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
+plt.text(-40,-18,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
         bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
 plt.colorbar(a)
 plt.show()
@@ -162,21 +165,21 @@ figdates=dates.num2date(begindate+time)
 #figdates[tim].strftime("%A/%b - %-I %p" ) 
 #figdates[tim].strftime("%m%d - %-I %p")
 
-tim=27
+tim=0
 
-lay=-1
+lay=15
 
 a=temp[tim,lay,:]
-aa=plt.pcolor(x_roms,y_roms, np.squeeze(a),vmin=15,vmax=24)
-#aa=plt.pcolor(x_roms,y_roms, np.squeeze(a))
-plt.text(-42,-22,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
-        bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
+#aa=plt.pcolor(x_roms,y_roms, np.squeeze(a),vmin=21,vmax=25)
+aa=plt.pcolor(x_roms,y_roms, np.squeeze(a))
 plt.colorbar(aa)
-plt.text(-49,-25,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
+plt.text(-40,-18,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
         bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
 plt.show()
 
 
+
+plt.pcolor(x_roms,y_roms, h_roms,vmax=200);plt.colorbar();plt.show()
 
 ################WIND
 
@@ -189,20 +192,26 @@ vwind=avgfile['Vwind'][:]
 
 
 sp=3
-tim=34
+tim=1
 
 uu = uwind[tim,:]
 vv = vwind[tim,:]
 
-uu=np.cos(angle)*uu - np.sin(angle)*vv
+uout=np.cos(angle)*uu - np.sin(angle)*vv
 
-vv=np.cos(angle)*vv + np.sin(angle)*uu
+vout=np.cos(angle)*vv + np.sin(angle)*uu
 
-val=np.sqrt((uu[:,:]**2)+(vv[:,:]**2))
-a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min())
+#uout=uu
+
+#vout=vv
+
+val=np.sqrt((uout[:,:]**2)+(vout[:,:]**2))
+
+a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=0, vmax=13)
+#a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=0)
 plt.colorbar(a)
-plt.quiver(x_roms[0:-1:sp, 0:-1:sp],y_roms[0:-1:sp, 0:-1:sp],uu[0:-1:sp, 0:-1:sp], vv[0:-1:sp, 0:-1:sp])
-plt.text(-48,-23,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
+plt.quiver(x_roms[0:-1:sp, 0:-1:sp],y_roms[0:-1:sp, 0:-1:sp],uout[0:-1:sp, 0:-1:sp], vout[0:-1:sp, 0:-1:sp])
+plt.text(-40,-18,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
         bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
 plt.show()
 
@@ -309,3 +318,53 @@ convert -resize 1000x800 -delay 35 -loop 0 `ls -v *.png` myimage2.gif   #maior d
 ffmpeg -i myimage2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" forecast.mp4
 
 cp forecast.mp4 /mnt/c/Users/Fernando/Desktop
+
+
+
+
+##zoom
+
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+
+tim=-1
+lay=-1
+
+sp=5
+
+up=u[tim,lay,:,:]
+
+vp=v[tim,lay,:,:]
+
+uu=up
+
+vv=vp
+
+val=np.sqrt((uu**2)+(vv**2))
+
+fig, ax1 = plt.subplots()
+
+a=ax1.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=0.80)
+#a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=val.max())
+cnt=ax1.contour(x_roms,y_roms,h_roms,levels=[200],colors=('red'))
+ax1.quiver(x_roms[0:-1:sp, 0:-1:sp],y_roms[0:-1:sp, 0:-1:sp],uu[0:-1:sp, 0:-1:sp], vv[0:-1:sp, 0:-1:sp])
+#plt.text(-49,-28,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
+#        bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
+plt.text(-44,-21,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
+        bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
+plt.colorbar(a)
+#plt.show()
+
+
+
+axins = zoomed_inset_axes(ax1, 2, loc=1) # zoom-factor: 2.5, location: upper-left
+axins.plot(x_roms,y_roms)
+x1, x2, y1, y2 = -44, -43, -24, -23.5 # specify the limits
+axins.set_xlim(x1, x2) # apply the x-limits
+axins.set_ylim(y1, y2) # apply the y-limits
+axins.tick_params(axis="y",direction="in", pad=-22)
+axins.tick_params(axis="x",direction="in", pad=-15)
+plt.yticks(visible=False)
+plt.xticks(visible=False)
+mark_inset(ax1, axins, loc1=2, loc2=1, fc="none", ec="0.5")
+plt.show()
