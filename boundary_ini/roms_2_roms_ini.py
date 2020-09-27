@@ -16,6 +16,7 @@ from datetime import datetime as dt
 from parameters_bry_in import *
 import matplotlib.dates as dates
 from funcs_interpolation import horiz_interp_3dvar, vert_interp_3dvar
+from funcs_interpolation import vert_interp_3dvar_r2r
 
 
 ##--------------
@@ -276,13 +277,13 @@ for rt in range(1):     #only interpolate first time
         del V_int2d, V_int3d
 
         TEMP_int2d = np.load('TEMP_int2d.npy')
-        TEMP_int3d = vert_interp_3dvar(TEMP_int2d, z_parent, zr)
+        TEMP_int3d = vert_interp_3dvar_r2r(TEMP_int2d, z_parent, zr)
         np.savez('int3d_t.npz', TEMP_int3d=TEMP_int3d)
         # exit()
         del TEMP_int2d, TEMP_int3d
 
         SALT_int2d = np.load('SALT_int2d.npy')
-        SALT_int3d = vert_interp_3dvar(SALT_int2d, z_parent, zr)
+        SALT_int3d = vert_interp_3dvar_r2r(SALT_int2d, z_parent, zr)
         np.savez('int3d_s.npz', SALT_int3d=SALT_int3d)
         # exit()
         del SALT_int2d, SALT_int3d

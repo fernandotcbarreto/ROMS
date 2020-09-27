@@ -346,3 +346,131 @@ def vert_interp_3dvar(pvar3d, z_parent, z_child):
 		     cvar3d[:,ieta,ixi] = fi
 
 	return cvar3d
+
+def vert_interp_3dvar_r2r(pvar3d, z_parent, z_child):
+	global zp, fp1, zc
+	print ("Vertically interpolating 3D variable...")
+	cvar3d = np.zeros((z_child.shape[0],) + pvar3d.shape[1:])
+
+	zz_parent = np.unique(z_parent)
+
+	etamax, ximax = pvar3d.shape[1:]
+	for ieta in range(etamax):
+		# print ("")
+		np.disp("Row %s of %s"%(str(ieta+1),str(etamax)))
+		# print ("")
+		for ixi in range(ximax):
+			# if ixi%20==0:
+			# 	np.disp("Col %s of %s"%(str(ixi+1),str(ximax)))
+			# np.disp("Col %s of %s"%(str(ixi+1),str(ximax)))
+
+		     zp = z_parent[:,ieta,ixi]
+		     zc = z_child[:,ieta,ixi]
+		     fp = pvar3d[:,ieta,ixi]
+
+		     if noextra:
+                        fi = np.interp(zc,zp,fp)
+#                        if ( (zc.min() < zp.min()) and (abs(zc.min() - zp.min()) > 5) ):
+                        if ( (zc.min() < zp.min()) ):
+                          for ki in range(len(zc)):
+                            if (zc[ki] < z_parent[:,ieta,:].min()):
+                              zc[ki] = z_parent[:,ieta,:].min() 
+                            if (zc[ki] < zp.min()): 
+                              for ixi2 in range(ximax):
+                                if (z_parent[:,ieta,ixi2].min() <= zc[ki]):
+                                  fi[ki] =  np.interp(zc[ki],z_parent[:,ieta,ixi2],pvar3d[:,ieta,ixi2])
+                                  break
+                            else:
+                              break  
+		     else:
+			# If no parent variable deeper than the first child s-level,
+			# Search horizontally on the parent grid for the nearest value.
+
+		        I = interp1d(zp, fp, kind='linear', bounds_error=False, assume_sorted=False)		
+		        I = extrap1d(I)
+			
+		        if ixi==6 and ieta==6:
+                          print ('ZP',fp)
+                                                  
+		        fi = I(zc)
+			
+		     cvar3d[:,ieta,ixi] = fi
+
+	return cvar3d
+
+
+def vert_interp_3dvar_cut_r2r(pvar3d, z_parent, z_child):
+	global zp, fp1, zc
+	print ("Vertically interpolating 3D variable...")
+	cvar3d = np.zeros((z_child.shape[0],) + pvar3d.shape[1:])
+
+	zz_parent = np.unique(z_parent)
+
+	etamax, ximax = pvar3d.shape[1:]
+	
+	for ieta in [0, 1,etamax-2,etamax-1]:
+		for ixi in range(ximax):
+
+		     zp = z_parent[:,ieta,ixi]
+		     zc = z_child[:,ieta,ixi]
+		     fp = pvar3d[:,ieta,ixi]
+
+		     if noextra:
+                        fi = np.interp(zc,zp,fp) 
+#                        if ( (zc.min() < zp.min()) and (abs(zc.min() - zp.min()) > 5) ):
+                        if ( (zc.min() < zp.min()) ):
+                          for ki in range(len(zc)):
+                            if (zc[ki] < z_parent[:,ieta,:].min()):
+                              zc[ki] = z_parent[:,ieta,:].min() 
+                            if (zc[ki] < zp.min()): 
+                              for ixi2 in range(ximax):
+                                if (z_parent[:,ieta,ixi2].min() <= zc[ki]):
+                                  fi[ki] =  np.interp(zc[ki],z_parent[:,ieta,ixi2],pvar3d[:,ieta,ixi2])
+                                  break
+                            else:
+                              break  
+		     else:
+                        
+		        I = interp1d(zp, fp, kind='linear', bounds_error=False, assume_sorted=False)		
+		        I = extrap1d(I)
+			
+		        if ixi==6 and ieta==6:
+                          print ('ZP',fp)
+                                                  
+		        fi = I(zc)
+			
+		     cvar3d[:,ieta,ixi] = fi
+	             
+	for ixi in [0,1,ximax-2, ximax-1]:
+	   for ieta in range(etamax):
+
+		     zp = z_parent[:,ieta,ixi]
+		     zc = z_child[:,ieta,ixi]
+		     fp = pvar3d[:,ieta,ixi]
+			
+		     if noextra:
+                        fi = np.interp(zc,zp,fp)
+#                        if ( (zc.min() < zp.min()) and (abs(zc.min() - zp.min()) > 5) ):
+                        if ( (zc.min() < zp.min()) ):
+                          for ki in range(len(zc)):
+                            if (zc[ki] < z_parent[:,:,ixi].min()):
+                              zc[ki] = z_parent[:,:,ixi].min() 
+                            if (zc[ki] < zp.min()): 
+                              for ieta2 in range(etamax):
+                                if (z_parent[:,ieta2,ixi].min() <= zc[ki]):
+                                  fi[ki] =  np.interp(zc[ki],z_parent[:,ieta2,ixi],pvar3d[:,ieta2,ixi])
+                                  break
+                            else:
+                              break  
+		     else:
+                        
+		        I = interp1d(zp, fp, kind='linear', bounds_error=False, assume_sorted=False)		
+		        I = extrap1d(I)
+			
+		        if ixi==6 and ieta==6:
+                          print ('ZP',fp)
+                                                  
+		        fi = I(zc)
+		     cvar3d[:,ieta,ixi] = fi
+        
+	return cvar3d
