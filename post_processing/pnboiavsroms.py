@@ -23,22 +23,24 @@ def vel_conv(vel,dir):
 ###############adcp
 
 #adcphis=pd.read_csv('historico_itajai.txt')
-adcphis=pd.read_csv('historico_vitoria.txt')
+#adcphis=pd.read_csv('historico_vitoria.txt')
+adcphis=pd.read_csv('historico_cabofrio.txt')
 adcphis[adcphis.Lat<-100]=np.nan
 adcphis = adcphis.dropna()
 lat=adcphis['Lat'].min()
 lon=adcphis['Lon'].min()
 
 #adcp=pd.read_csv('adcptratados_itajai.csv')
-adcp=pd.read_csv('adcptratados_vitoria_2.csv')
+#adcp=pd.read_csv('adcptratados_vitoria_2.csv')
+adcp=pd.read_csv('adcptratados_cabofrio2.csv')
 adcp['Lat']=lat
 adcp['Lon']=lon
 adcp['datas']=dates.datestr2num(adcp.data)
 
 #vel, dir='Cvel3','Cdir3'
 #vel, dir='Cvel13','Cdir13'
-#vel, dir='Cvel14','Cdir14'
-vel, dir='Cvel9','Cdir9'
+vel, dir='Cvel14','Cdir14'
+#vel, dir='Cvel9','Cdir9'
 
 
 vel=adcp[vel]
@@ -69,9 +71,10 @@ from matplotlib import dates
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
      
-avgfile=Dataset('HIS_FILE_20200421_5D0-20200428_5D0_hind_correct_year_WEAK_menor_azul_nopline_0005.nc')
+avgfile=Dataset('HIS_FILE_rotate_cabofrio_3_HIGH_tmz_2_0004.nc')
 
-fname_grd = 'azul_grd_era_NEW_menor_azul.nc'
+fname_grd = 'CF_tmz_small026_2.nc'
+
 
 ## Load ROMS grid.
 grd = Dataset(fname_grd)
@@ -82,6 +85,12 @@ msk_romsv = grd.variables['mask_v'][:]
 h_roms = grd.variables['h'][:]
 sh2 = msk_roms.shape
 etamax, ximax = sh2
+
+ltlatlon=abs(y_roms - lat)
+lglatlon=abs(x_roms - lon)
+latlon=ltlatlon + lglatlon
+ltmin=int(np.where(latlon == latlon.min())[0])
+lgmin=int(np.where(latlon == latlon.min())[1])
 
 theta_b = 0.4
 theta_s = 5.0
@@ -102,8 +111,8 @@ zr = -scoord.z_r[:]
  
 #zc=np.array([12.5])
 #zc=np.array([47.5])
-#zc=np.array([51.0])
-zc=np.array([33.5])
+zc=np.array([51.0])
+#zc=np.array([33.5])
 
 
 zc=zc[::-1]
@@ -128,6 +137,11 @@ uavg=np.concatenate([uavg,uavg2], axis=0)
 vavg=np.concatenate([vavg,vavg2], axis=0)
 tempavg=np.concatenate([tempavg,tempavg2], axis=0)
 
+uavg=uavg[:,:,ltmin-3:ltmin+3, lgmin-3:lgmin+3]
+vavg=vavg[:,:,ltmin-3:ltmin+3, lgmin-3:lgmin+3]
+tempavg=tempavg[:,:,ltmin-3:ltmin+3, lgmin-3:lgmin+3]
+x_roms=x_roms[ltmin-3:ltmin+3, lgmin-3:lgmin+3]
+y_roms=y_roms[ltmin-3:ltmin+3, lgmin-3:lgmin+3]
 
 time=np.concatenate([time[:]/(24*60*60),time2[:]/(24*60*60)])
 
@@ -143,6 +157,8 @@ for j in range(intu.shape[2]):
   for k in range(intu.shape[3]):
     if (zr[-1,j,k] > zc.min()):
       zr[-1,j,k] = zc.min()
+
+zr=zr[:,ltmin-3:ltmin+3, lgmin-3:lgmin+3]
 
 UNDEF=np.nan
 
@@ -224,25 +240,25 @@ timevec=np.concatenate([timevec1,timevec])
 vbeca=vsitu.copy()
 ubeca=usitu.copy()
 
+vson=vsitu.copy()
+uson=usitu.copy()
 
 vsitutdad=weim(vbeca,61)
 usitutdad=weim(ubeca,61)
 
 from utils import weim
 
-vmedt=weim(vmed,81)
-vsitut=weim(vsitu,81)
-
-
-umedt=weim(umed,81)
-usitut=weim(usitu,81)
+vmedt=weim(vmed,61)
+vsitut=weim(vsitu,61)
+umedt=weim(umed,61)
+usitut=weim(usitu,61)
 
 
 
 plt.plot(dates.num2date(timevec),vmedt, 'red', label='PNBOIA')
 plt.plot(dates.num2date(timevec),vsitut, 'blue', label='ROMS')
 ax = plt.gca()
-#ax.set_ylim([-0.3, 0.3])
+#ax.set_ylim([-0.4, 0.4])
 
 ax.legend(loc='best')
 plt.show()
@@ -251,7 +267,7 @@ plt.show()
 plt.plot(dates.num2date(timevec),umedt, 'red',label='PNBOIA')
 plt.plot(dates.num2date(timevec),usitut, 'blue',  label='ROMS')
 ax = plt.gca()
-#ax.set_ylim([-0.2, 0.2])
+#ax.set_ylim([-0.4, 0.4])
 ax.legend(loc='best')
 plt.show()
 
@@ -272,35 +288,36 @@ print(rmseu)
 
 
 
-vmedt=weim(vmed1,91)
-vsitut=weim(vsitu1,61)
-
-
-umedt=weim(umed1,91)
-usitut=weim(usitu1,71)
+vmedt=weim(vmed,31)
+vsitut=weim(vsitu,31)
+umedt=weim(umed,31)
+usitut=weim(usitu,31)
 
 plt.style.use('ggplot')
 
+
 fig, axs = plt.subplots(2, sharex=True, figsize=(8,5))
 #fig.suptitle('Vertically stacked subplots')
-axs[0].plot(dates.num2date(timevec1),vsitut, 'red', label='V-component ROMS NESTED')
-axs[0].plot(dates.num2date(timevec1),vmedt, 'blue', label='V-component PNBOIA')
+axs[0].plot(dates.num2date(timevec),vsitut, 'red', label='V-component ROMS')
+axs[0].plot(dates.num2date(timevec),vmedt, 'blue', label='V-component PNBOIA')
 legend=axs[0].legend(loc=2, fontsize='x-small')
 legend.get_frame().set_facecolor('grey')
-axs[0].set_ylim([-0.3, 0.3])
+axs[0].set_ylim([-0.45, 0.55])
+axs[0].tick_params(labelsize=9)
 
 
-axs[1].plot(dates.num2date(timevec1),usitut, 'red',  label='U-componen ROMS NESTED')
-axs[1].plot(dates.num2date(timevec1),umedt, 'blue',label='U-component PNBOIA')
+axs[1].plot(dates.num2date(timevec),usitut, 'red',  label='U-componen ROMS')
+axs[1].plot(dates.num2date(timevec),umedt, 'blue',label='U-component PNBOIA')
 axs[1].legend(loc=2)
 legend=axs[1].legend(loc=2, fontsize='x-small')
 legend.get_frame().set_facecolor('grey')
-axs[1].set_ylim([-0.2, 0.2])
+axs[1].set_ylim([-0.45, 0.55])
 fig.text(0.06, 0.5, 'Velocity (m/s)', ha='center', va='center', rotation='vertical', fontsize=12)
-
+axs[1].tick_params(labelsize=9)
 
 plt.xticks(fontsize=8,rotation=35)
 plt.gcf().subplots_adjust(bottom=0.15)
+fig.text(0.5, 0.9,'Depth = ' + str(float(zc)) + ' m',  fontsize=12, ha='center', va='center')
 
 plt.show()
 
@@ -316,9 +333,11 @@ from matplotlib.pylab import *
 from matplotlib import dates
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-avgfile=Dataset('HIS_FILE_20200421_5D0-20200428_5D0_hind_correct_year_WEAK_menor_azul_nopline_0005.nc')
+   
+     
+avgfile=Dataset('HIS_FILE_rotate_cabofrio_3_HIGH_0004.nc')
 
-fname_grd = 'azul_grd_era_NEW_menor_azul.nc'
+fname_grd = 'rotate_cf_16_09_HIGH.nc'
 
 time=avgfile['ocean_time'][:]/(24*60*60)
 begindate=avgfile['ocean_time'].units[14:]
@@ -328,8 +347,8 @@ romstime=begindate+time
 timeini=dates.num2date(romstime[0]  - 1).strftime("%Y%m%d")
 timeend=dates.num2date(romstime[-1]).strftime("%Y%m%d")
 
-#input_path='/home/fernando/roms/src/Projects/hindcast_2/mercator/MYOCEAN_AZUL_FORECAST_'    #
-input_path='/home/fernando/roms/src/Projects/hindcast/mercator/MYOCEAN_AZUL_FORECAST_'    #
+input_path='/home/fernando/roms/src/Projects/hindcast_2/mercator/MYOCEAN_AZUL_FORECAST_'    #
+#input_path='/home/fernando/roms/src/Projects/hindcast/mercator/MYOCEAN_AZUL_FORECAST_'    #
 
 
 a=[timeini, timeend]
@@ -366,14 +385,38 @@ uavg[uavg<-100]=np.nan
 vavg[vavg<-100]=np.nan
 zr = file['depth'][:]
 
-zc=np.array([12.5])
+#zc=np.array([12.5])
 
 #zc=np.array([47.5])
 
-#zc=np.array([51.0])
+zc=np.array([51.0])
 
-zc=np.array([33.5])
+#zc=np.array([33.5])
 
+x_fm=file['longitude'][:]
+y_fm=file['latitude'][:]
+x_fm,y_fm=np.meshgrid(x_fm,y_fm)
+
+minlon = x_fm[0,:] - lon
+iml = np.where(np.absolute(minlon)==np.absolute(minlon).min())[0][0]
+maxlon = x_fm[0,:] - lon
+imxl = np.where(np.absolute(maxlon)==np.absolute(maxlon).min())[0][0]
+
+minlat = y_fm[:,0] - lat
+imla = np.where(np.absolute(minlat)==np.absolute(minlat).min())[0][0]
+maxlat = y_fm[:,0] - lat
+imxla = np.where(np.absolute(maxlat)==np.absolute(maxlat).min())[0][0]
+
+lim=3
+
+uavg=uavg[:,:,imxla-lim:imla+lim,iml-lim:imxl+lim]
+vavg=vavg[:,:,imxla-lim:imla+lim,iml-lim:imxl+lim]
+tempavg=tempavg[:,:imxla-lim:imla+lim,iml-lim:imxl+lim]
+
+
+x_fm = x_fm[imxla-lim:imla+lim,iml-lim:imxl+lim]
+
+y_fm = y_fm[imxla-lim:imla+lim,iml-lim:imxl+lim]
 
 
 intu=np.zeros([uavg.shape[0],len(zc),uavg.shape[2], uavg.shape[3]])
@@ -421,22 +464,24 @@ def vel_conv(vel,dir):
 ###############adcp
 
 #adcphis=pd.read_csv('historico_itajai.txt')
-adcphis=pd.read_csv('historico_vitoria.txt')
+#adcphis=pd.read_csv('historico_vitoria.txt')
+adcphis=pd.read_csv('historico_cabofrio.txt')
 adcphis[adcphis.Lat<-100]=np.nan
 adcphis = adcphis.dropna()
 lat=adcphis['Lat'].min()
 lon=adcphis['Lon'].min()
 
 #adcp=pd.read_csv('adcptratados_itajai.csv')
-adcp=pd.read_csv('adcptratados_vitoria_2.csv')
+#adcp=pd.read_csv('adcptratados_vitoria_2.csv')
+adcp=pd.read_csv('adcptratados_cabofrio2.csv')
 adcp['Lat']=lat
 adcp['Lon']=lon
 adcp['datas']=dates.datestr2num(adcp.data)
 
 #vel, dir='Cvel3','Cdir3'
 #vel, dir='Cvel13','Cdir13'
-#vel, dir='Cvel14','Cdir14'
-vel, dir='Cvel9','Cdir9'
+vel, dir='Cvel14','Cdir14'
+#vel, dir='Cvel9','Cdir9'
 
 vel=adcp[vel]
 dir=adcp[dir]
@@ -495,28 +540,6 @@ intunewtime[intunewtime>100]=np.nan
 vsitu=np.zeros([len(timeostia)])
 usitu=np.zeros([len(timeostia)])
 
-x_fm=file['longitude'][:]
-y_fm=file['latitude'][:]
-x_fm,y_fm=np.meshgrid(x_fm,y_fm)
-
-minlon = x_fm[0,:] - lon
-iml = np.where(np.absolute(minlon)==np.absolute(minlon).min())[0][0]
-maxlon = x_fm[0,:] - lon
-imxl = np.where(np.absolute(maxlon)==np.absolute(maxlon).min())[0][0]
-
-minlat = y_fm[:,0] - lat
-imla = np.where(np.absolute(minlat)==np.absolute(minlat).min())[0][0]
-maxlat = y_fm[:,0] - lat
-imxla = np.where(np.absolute(maxlat)==np.absolute(maxlat).min())[0][0]
-
-lim=5
-
-x_fm = x_fm[imxla-lim:imla+lim,iml-lim:imxl+lim]
-
-y_fm = y_fm[imxla-lim:imla+lim,iml-lim:imxl+lim]
-
-intvnewtime=intvnewtime[:,imxla-lim:imla+lim,iml-lim:imxl+lim]
-intunewtime=intunewtime[:,imxla-lim:imla+lim,iml-lim:imxl+lim]
 
 for i in range(len(vsitu)):
   vsitu[i]=griddata((x_fm.ravel(),y_fm.ravel()), intvnewtime[i,:].ravel(), (lon,lat))
@@ -554,12 +577,23 @@ umedt=weim(umed,61)
 usitut=weim(usitu,61)
 
 
-vsitutdad=weim(vbeca,81)
-usitutdad=weim(ubeca,81)
+vsitutdad=weim(vbeca,61)
+usitutdad=weim(ubeca,61)
 
 
 
+vsitutnest=weim(vson, 61)
+usitutnest=weim(uson, 61)
 
+
+vmedt=weim(vmed,81)
+vsitut=weim(vsitu,31)
+umedt=weim(umed,81)
+usitut=weim(usitu,31)
+vsitutdad=weim(vbeca,61)
+usitutdad=weim(ubeca,61)
+vsitutnest=weim(vson, 61)
+usitutnest=weim(uson, 61)
 
 
 umedt=weim(umed,81)
@@ -588,6 +622,37 @@ plt.plot(dates.num2date(timevec),usitut, 'blue',  label='ROMS')
 ax = plt.gca()
 ax.legend(loc='best')
 plt.show()
+
+from scipy import stats
+from sklearn.metrics import mean_squared_error as mse
+
+stats.pearsonr(vmedt,vsitut)
+
+rmsev=np.sqrt(mse(vmedt,vsitut))
+print(rmsev)
+
+
+stats.pearsonr(umedt,usitut)
+
+rmseu=np.sqrt(mse(umedt,usitut))
+print(rmseu)
+
+
+
+from scipy import stats
+from sklearn.metrics import mean_squared_error as mse
+
+stats.pearsonr(vmedt,vsitutnest)
+
+rmsev=np.sqrt(mse(vmedt,vsitutnest))
+print(rmsev)
+
+
+stats.pearsonr(umedt,usitutnest)
+
+rmseu=np.sqrt(mse(umedt,usitutnest))
+print(rmseu)
+
 
 from scipy import stats
 from sklearn.metrics import mean_squared_error as mse
@@ -635,25 +700,25 @@ plt.style.use('ggplot')
 
 fig, axs = plt.subplots(2, sharex=True, figsize=(9,6))
 #fig.suptitle('Vertically stacked subplots')
-axs[0].plot(dates.num2date(timevec1),vsitut, 'r--', label='V-component MERCATOR')
-axs[0].plot(dates.num2date(timevec1),vsitutdad, 'green',linestyle='--', label='V-component ROMS PARENT')
-axs[0].plot(dates.num2date(timevec1),vsitutnest, 'black',linestyle='--', label='V-component ROMS NEST')
-axs[0].plot(dates.num2date(timevec1),vmedt, 'blue', label='V-component PNBOIA')
+#axs[0].plot(dates.num2date(timevec),vsitut, 'r--', label='V-component MERCATOR')
+#axs[0].plot(dates.num2date(timevec),vsitutdad, 'green',linestyle='--', label='V-component ROMS PARENT')
+axs[0].plot(dates.num2date(timevec),vsitutnest, 'black',linestyle='--', label='V-component ROMS')
+axs[0].plot(dates.num2date(timevec),vmedt, 'blue', label='V-component PNBOIA')
 legend=axs[0].legend(loc=2, fontsize='xx-small')
 legend.get_frame().set_facecolor('grey')
-axs[0].set_ylim([-0.3, 0.3])
+axs[0].set_ylim([-0.4, 0.4])
 axs[0].tick_params(labelsize=8)
 
 
 
-axs[1].plot(dates.num2date(timevec1),usitut, 'r--',  label='U-component MERCATOR')
-axs[1].plot(dates.num2date(timevec1),usitutdad, 'green',linestyle='--',  label='U-component ROMS PARENT')
-axs[1].plot(dates.num2date(timevec1),usitutnest, 'black',linestyle='--', label='U-component ROMS NEST')
-axs[1].plot(dates.num2date(timevec1),umedt, 'blue',label='U-component PNBOIA')
+#axs[1].plot(dates.num2date(timevec),usitut, 'r--',  label='U-component MERCATOR')
+#axs[1].plot(dates.num2date(timevec),usitutdad, 'green',linestyle='--',  label='U-component ROMS PARENT')
+axs[1].plot(dates.num2date(timevec),usitutnest, 'black',linestyle='--', label='U-component ROMS')
+axs[1].plot(dates.num2date(timevec),umedt, 'blue',label='U-component PNBOIA')
 axs[1].legend(loc=2)
 legend=axs[1].legend(loc=2, fontsize='xx-small')
 legend.get_frame().set_facecolor('grey')
-axs[1].set_ylim([-0.2, 0.2])
+axs[1].set_ylim([-0.4, 0.4])
 axs[1].tick_params(labelsize=8)
 
 
@@ -663,4 +728,33 @@ plt.gcf().subplots_adjust(bottom=0.15)
 fig.text(0.5, 0.9,'Depth = ' + str(float(zc)) + ' m',  fontsize=12, ha='center', va='center')
 
 plt.show()
+
+
+
+
+
+
+fig, axs = plt.subplots(2, sharex=True, figsize=(8,5))
+#fig.suptitle('Vertically stacked subplots')
+axs[0].plot(dates.num2date(timevec),vsitut, 'red', label='V-component MERCATOR')
+axs[0].plot(dates.num2date(timevec),vmedt, 'blue', label='V-component PNBOIA')
+legend=axs[0].legend(loc=2, fontsize='x-small')
+legend.get_frame().set_facecolor('grey')
+axs[0].set_ylim([-0.3, 0.3])
+
+
+axs[1].plot(dates.num2date(timevec),usitut, 'red',  label='U-componen MERCATOR')
+axs[1].plot(dates.num2date(timevec),umedt, 'blue',label='U-component PNBOIA')
+axs[1].legend(loc=2)
+legend=axs[1].legend(loc=2, fontsize='x-small')
+legend.get_frame().set_facecolor('grey')
+axs[1].set_ylim([-0.2, 0.2])
+fig.text(0.06, 0.5, 'Velocity (m/s)', ha='center', va='center', rotation='vertical', fontsize=12)
+
+
+plt.xticks(fontsize=8,rotation=35)
+plt.gcf().subplots_adjust(bottom=0.15)
+
+plt.show()
+
 
