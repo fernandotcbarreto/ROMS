@@ -5,6 +5,9 @@ forocean='/home/fernando/roms/src/Projects/operational/rotinas_boundary_initial/
 
 numdays=7                          #numdays to run ROMS
 
+newini=ocean_in_forecast_ciclone.in                 #name of greatest .in file
+
+
 
 hisinterson=6   #hours interval for nested grid (important for nesting)
 
