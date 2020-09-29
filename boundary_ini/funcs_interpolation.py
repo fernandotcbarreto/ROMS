@@ -373,13 +373,18 @@ def vert_interp_3dvar_r2r(pvar3d, z_parent, z_child):
 #                        if ( (zc.min() < zp.min()) and (abs(zc.min() - zp.min()) > 5) ):
                         if ( (zc.min() < zp.min()) ):
                           for ki in range(len(zc)):
-                            if (zc[ki] < z_parent[:,ieta,:].min()):
-                              zc[ki] = z_parent[:,ieta,:].min() 
+                            if ((zc[ki] < z_parent[:,ieta,:].min()) and (zc[ki] < z_parent[:,:,ixi].min())):
+                              zc[ki] = np.min([z_parent[:,ieta,:].min(), z_parent[:,:,ixi].min()]) 
                             if (zc[ki] < zp.min()): 
                               for ixi2 in range(ximax):
                                 if (z_parent[:,ieta,ixi2].min() <= zc[ki]):
                                   fi[ki] =  np.interp(zc[ki],z_parent[:,ieta,ixi2],pvar3d[:,ieta,ixi2])
                                   break
+                                if (ixi2 == ximax-1):
+                                  for ieta2 in range(etamax):
+                                    if (z_parent[:,ieta2,ixi].min() <= zc[ki]):
+                                      fi[ki] =  np.interp(zc[ki],z_parent[:,ieta2,ixi],pvar3d[:,ieta2,ixi])
+                                    break
                             else:
                               break  
 		     else:
