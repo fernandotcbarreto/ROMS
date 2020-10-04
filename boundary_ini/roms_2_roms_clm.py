@@ -315,10 +315,26 @@ print ('ii')
 
 print ('checar')
 
+#CALCULATING BAROTROPIC COMPONENT FOLLOWING
+
+#https://earthscience.stackexchange.com/questions/13167/barotropic-component-definition
+
+ubar_int3d_1=np.zeros((n_time,)  + (x_roms.shape[0],) + (x_roms.shape[1],))
+
+vbar_int3d_1=np.zeros((n_time,)  + (x_roms.shape[0],) + (x_roms.shape[1],))
+
+dzr=abs(np.diff(zr, axis=0, append=0))
+
+for rt in range(int(numdays[0])):
+  ubar_int3d_1[rt,:,:] = np.sum(u_int3d[rt,:,:,:]*dzr, axis=0) / abs(zr[0,::])
+  vbar_int3d_1[rt,:,:] = np.sum(v_int3d[rt,:,:,:]*dzr, axis=0) / abs(zr[0,::])
 
 ## Moving velocity variables to their respective U,V-points.
 u_int3d = 0.5*(u_int3d[:,:,:,1:]+u_int3d[:,:,:,:-1])
 v_int3d = 0.5*(v_int3d[:,:,1:,:]+v_int3d[:,:,:-1,:])
+
+ubar_int3d = 0.5*(ubar_int3d_1[:,:,1:]+ubar_int3d_1[:,:,:-1])
+vbar_int3d = 0.5*(vbar_int3d_1[:,1:,:]+vbar_int3d_1[:,:-1,:])
 
 ## Fixing bottom level values of 3D variables (IF NEEDED ONLY).
 if False:
@@ -327,10 +343,10 @@ if False:
 ## Masking bad values.
 temp_int3d,salt_int3d,zeta,u_int3d,v_int3d = map(np.ma.masked_invalid, (temp_int3d,salt_int3d,zeta,u_int3d,v_int3d))
 
-## Vertically-averaged velocities.
-for rt in range(sumtimes):
-  ubar_int3d[rt,:,:] = u_int3d[rt,:,:,:].mean(axis=0)
-  vbar_int3d[rt,:,:] = v_int3d[rt,:,:,:].mean(axis=0)
+## Vertically-averaged velocities.  OLD
+#for rt in range(sumtimes):
+#  ubar_int3d[rt,:,:] = u_int3d[rt,:,:,:].mean(axis=0)
+#  vbar_int3d[rt,:,:] = v_int3d[rt,:,:,:].mean(axis=0)
   
 
 ##===================
