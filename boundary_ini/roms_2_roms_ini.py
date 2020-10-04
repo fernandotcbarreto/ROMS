@@ -328,9 +328,9 @@ print ('checar')
 
 #https://earthscience.stackexchange.com/questions/13167/barotropic-component-definition
 
-ubar_int3d_1=np.zeros((n_time,)  + (x_roms.shape[0],) + (x_roms.shape[1],))
+ubar_int3d_1=np.zeros((sumtimes,)  + (x_roms.shape[0],) + (x_roms.shape[1],))
 
-vbar_int3d_1=np.zeros((n_time,)  + (x_roms.shape[0],) + (x_roms.shape[1],))
+vbar_int3d_1=np.zeros((sumtimes,)  + (x_roms.shape[0],) + (x_roms.shape[1],))
 
 dzr=abs(np.diff(zr, axis=0, append=0))
 
