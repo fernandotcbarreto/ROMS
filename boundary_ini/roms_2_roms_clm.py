@@ -325,7 +325,7 @@ vbar_int3d_1=np.zeros((sumtimes,)  + (x_roms.shape[0],) + (x_roms.shape[1],))
 
 dzr=abs(np.diff(zr, axis=0, append=0))
 
-for rt in range(int(numdays[0])):
+for rt in range(sumtimes):
   ubar_int3d_1[rt,:,:] = np.sum(u_int3d[rt,:,:,:]*dzr, axis=0) / abs(zr[0,::])
   vbar_int3d_1[rt,:,:] = np.sum(v_int3d[rt,:,:,:]*dzr, axis=0) / abs(zr[0,::])
 
