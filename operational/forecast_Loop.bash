@@ -40,11 +40,6 @@ cd $mercatordata
 cd $maindir
 
 
-xmin=-55
-xmax=-30
-ymin=-40
-ymax=-15
-
 
 # Download the last days of gfs
 

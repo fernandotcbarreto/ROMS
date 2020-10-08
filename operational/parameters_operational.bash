@@ -48,3 +48,11 @@ dadnud=dad.nc
 son_nud_1=son_1.nc
 
 son_nud_2=son_2.nc
+
+
+######## Coordinates Mercator data
+
+xmin=-52
+xmax=-23
+ymin=-32
+ymax=-14
