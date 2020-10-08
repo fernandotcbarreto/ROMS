@@ -495,22 +495,13 @@ from netCDF4 import Dataset
 import numpy as np
 file=Dataset($rstfile)
 #print(some_text)
-print(int((np.where(file['ocean_time'][:]/(24*60*60)==$rstday)[0])))
+print(int((np.where(file['ocean_time'][:]/(24*60*60)==$numdays)[0])))
 file
 EOF
 ))
 
-rstindex=$((${rstindex[0]}+1))
-
-if [ $RST_FROM_HINDCAST == TRUE ];then
-
-sed -i "0,/NRREC ==.*/{s/NRREC ==.*/NRREC == -1/}" ${newini}   #no outputing avg
-
-else
 
 sed -i "0,/NRREC ==.*/{s/NRREC ==.*/NRREC == $rstindex/}" ${newini}   #no outputing avg
-
-fi
 
 
 if [ $NUDGECLIM == TRUE ];then
