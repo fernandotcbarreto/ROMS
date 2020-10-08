@@ -243,7 +243,9 @@ fi
 
 ./romsS	< $newini
 
-./nesting_run_hind.bash $newini
+if [ $DoNest == TRUE ];then
+  ./nesting_run_hind.bash $newini
+fi
 
 RST_FROM_HINDCAST=TRUE
 
@@ -501,7 +503,15 @@ EOF
 ))
 
 
+if [ $RST_FROM_HINDCAST == TRUE ];then
+
+sed -i "0,/NRREC ==.*/{s/NRREC ==.*/NRREC == -1/}" ${newini}   #no outputing avg
+
+else
+
 sed -i "0,/NRREC ==.*/{s/NRREC ==.*/NRREC == $rstindex/}" ${newini}   #no outputing avg
+
+fi
 
 
 if [ $NUDGECLIM == TRUE ];then
@@ -516,8 +526,9 @@ fi
 
 ./romsS	< $newini
 
-
-./nesting_run_fore.bash $newini
+if [ $DoNest == TRUE ];then
+  ./nesting_run_fore.bash $newini
+fi
 
 
 RST_FROM_HINDCAST=FALSE

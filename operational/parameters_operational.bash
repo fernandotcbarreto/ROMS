@@ -13,6 +13,8 @@ hisinterson=6   #hours interval for nested grid (important for nesting)
 
 #son_grids=(azul_son_case1_newBAT_2_Mcu.nc azul_son_case2_newlm.nc)  #name of son grids seperated by space ex: son_grids=(son1.nc son2.nc)
 
+DoNest=FALSE         # TRUE OR FALSE  no space between =
+
 son_grids=(grid_rotated_SUL_2_NEST_smaler.nc grid_rotated_SUL_2_NEST2_smaler.nc)  #name of son grids seperated by space ex: son_grids=(son1.nc son2.nc)
 
 
@@ -41,7 +43,7 @@ Vstretching=4
 
 ############## NUDGING FILES
 
-NUDGECLIM=TRUE
+NUDGECLIM=FALSE                          #FALSE OR TRUE
 
 dadnud=dad.nc
 

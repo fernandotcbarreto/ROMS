@@ -280,8 +280,9 @@ fi
 
 ./romsS	< $newini
 
-
-./nesting_run_fore.bash $newini
+if [ $DoNest == TRUE ];then
+  ./nesting_run_fore.bash $newini
+fi
 
 
 
