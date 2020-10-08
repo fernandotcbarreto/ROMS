@@ -250,7 +250,7 @@ from netCDF4 import Dataset
 import numpy as np
 file=Dataset($rstfile)
 #print(some_text)
-print(int((np.where(file['ocean_time'][:]/(24*60*60)==$rstday)[0])))
+print(int((np.where(file['ocean_time'][:]/(24*60*60)==$rstday)[0]) + 1))
 file
 EOF
 ))
