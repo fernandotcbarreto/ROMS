@@ -6,10 +6,8 @@ Created by: Fernando Túlio Camilo Barreto
 
 ![alt text](https://github.com/fernandotcbarreto/stuff/blob/main/vst.png)
 
-![alt text](https://github.com/fernandotcbarreto/stuff/blob/main/vst.png, align="center")
-
 ![alt text](https://github.com/fernandotcbarreto/stuff/blob/main/myimage2.gif)
 
 <p align="center">
-  <img width="460" height="300" src="https://github.com/fernandotcbarreto/stuff/blob/main/vst.png">
+  <img src="https://github.com/fernandotcbarreto/stuff/blob/main/vst.png">
 </p>
