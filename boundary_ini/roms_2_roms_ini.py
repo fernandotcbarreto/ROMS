@@ -65,7 +65,8 @@ x_fm=x_fm[::-1,:]
 y_fm=file['lat_rho'][:]
 y_fm=y_fm[::-1,:]
   
-if not rotated: 
+#if not rotated:
+if abs(y_fm[0,:].max() - y_fm[0,:].min()) < 0.5: 
   minlon = x_fm[0,:] - x_roms.min()
   iml = np.where(np.absolute(minlon)==np.absolute(minlon).min())[0][0]
   maxlon = x_fm[0,:] - x_roms.max()
@@ -100,6 +101,36 @@ else:
   minlat = y_fm[:,-1] - y_roms[0,:].max()
   imla2 = np.where(np.absolute(minlat)==np.absolute(minlat).min())[0][0]
   imla=max(imla1,imla2)
+
+if  (x_fm[imxla - lim:imla + lim,iml - lim:imxl + lim].min() >= x_roms[:,-1].min()) or \
+(x_fm[imxla - lim:imla + lim,iml - lim:imxl + lim].max() <= x_roms[:,-1].max()) or \
+(y_fm[imxla - lim:imla + lim,iml - lim:imxl + lim].min() >= y_roms[:,-1].min()) or \
+(y_fm[imxla - lim:imla + lim,iml - lim:imxl + lim].max() <= y_roms[:,-1].max()) :
+
+  minlon = x_fm[0,:] - x_roms[:,0].min()
+  iml1 = np.where(np.absolute(minlon)==np.absolute(minlon).min())[0][0]
+  minlon = x_fm[-1,:] - x_roms[:,0].min()
+  iml2 = np.where(np.absolute(minlon)==np.absolute(minlon).min())[0][0]
+  iml=min(iml1,iml2)
+
+  maxlon = x_fm[0,:] - x_roms[:,-1].max()
+  imxl1 = np.where(np.absolute(maxlon)==np.absolute(maxlon).min())[0][0]
+  maxlon = x_fm[-1,:] - x_roms[:,-1].max()
+  imxl2 = np.where(np.absolute(maxlon)==np.absolute(maxlon).min())[0][0]
+  imxl=max(imxl1,imxl2) 
+ 
+  maxlat = y_fm[:,0] - y_roms[-1,:].max()
+  imxla1 = np.where(np.absolute(maxlat)==np.absolute(maxlat).min())[0][0]
+  maxlat = y_fm[:,-1] - y_roms[-1,:].max()
+  imxla2 = np.where(np.absolute(maxlat)==np.absolute(maxlat).min())[0][0]
+  imxla=min(imxla1,imxla2)
+
+  minlat = y_fm[:,0] - y_roms[0,:].min()
+  imla1 = np.where(np.absolute(minlat)==np.absolute(minlat).min())[0][0]
+  minlat = y_fm[:,-1] - y_roms[0,:].min()
+  imla2 = np.where(np.absolute(minlat)==np.absolute(minlat).min())[0][0]
+  imla=max(imla1,imla2)
+  
 
 if (iml-lim < 0) or (imxla-lim < 0) or (imxl + lim >  x_fm.shape[1]) or (imla + lim > x_fm.shape[0]):
   lim=0
