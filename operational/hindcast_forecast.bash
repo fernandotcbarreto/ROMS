@@ -5,10 +5,8 @@ BEGINRUN=TRUE
 
 ####HINDCAST
 
-maindir=/home/fernando/roms/src/Projects/operational   #main directory of the project
 nameini=operational_in.in                              
 rstday=1.
-DT=360.
 
 
 inig=-$numdays
@@ -21,18 +19,11 @@ endm=$(($endg-1))  #simulation will start at 12 PM, mercator reference
 
 #################SETUP GFS
 
-
-getgfs='/home/fernando/roms/src/Projects/forecast_gfs_data/get_gfs_manual_netcef.sh'
-gfsdata=${maindir}/gfs_data/
-
 #clean GFS data directory
 cd $gfsdata
 #rm -rf *
 cd $maindir
 ################SETUP MERCATOR
-
-getmercator='/home/fernando/roms/src/Projects/forecast_myocean_data/get_myocean_best_v2.sh* '
-mercatordata=${maindir}/mercator_data/
 
 #clean Mercator data directory
 cd $mercatordata
@@ -90,7 +81,6 @@ mv MYOCEAN* $mercatordata
 ################ MAKE ATM BOUNDARY CONDITIONS
 cd ${gfsdata}
 
-foratm='/home/fernando/roms/src/Projects/operational/rotinas_boundary_initial/gfs/'
 cp ${foratm}* .
 
 for filename in `ls GFS_F*`; do
@@ -116,7 +106,6 @@ cd ..
 
 cd $mercatordata
 
-forocean='/home/fernando/roms/src/Projects/operational/rotinas_boundary_initial/mercator/'
 cp ${forocean}* .
 
 cp ../$fathergrid . 
@@ -254,10 +243,8 @@ RST_FROM_HINDCAST=TRUE
 
 source parameters_operational.bash
 
-maindir=/home/fernando/roms/src/Projects/operational   #main directory of the project
 nameini=operational_in.in                              
 rstday=1.
-DT=360.
 
 
 inig=0
@@ -270,18 +257,11 @@ endm=$(($endg-1))  #simulation will start at 12 PM, mercator reference
 
 #################SETUP GFS
 
-
-getgfs='/home/fernando/roms/src/Projects/forecast_gfs_data/get_gfs_manual_netcef.sh'
-gfsdata=${maindir}/gfs_data/
-
 #clean GFS data directory
 cd $gfsdata
 #rm -rf *
 cd $maindir
 ################SETUP MERCATOR
-
-getmercator='/home/fernando/roms/src/Projects/forecast_myocean_data/get_myocean_best_v2.sh* '
-mercatordata=${maindir}/mercator_data/
 
 #clean Mercator data directory
 cd $mercatordata
@@ -338,7 +318,6 @@ mv MYOCEAN* $mercatordata
 ################ MAKE ATM BOUNDARY CONDITIONS
 cd ${gfsdata}
 
-foratm='/home/fernando/roms/src/Projects/operational/rotinas_boundary_initial/gfs/'
 cp ${foratm}* .
 
 for filename in `ls GFS_F*`; do
@@ -365,7 +344,6 @@ cd ..
 
 cd $mercatordata
 
-forocean='/home/fernando/roms/src/Projects/operational/rotinas_boundary_initial/mercator/'
 cp ${forocean}* .
 
 

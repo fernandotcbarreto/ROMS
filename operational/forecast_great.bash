@@ -97,7 +97,6 @@ mv MYOCEAN* $mercatordata
 ################ MAKE ATM BOUNDARY CONDITIONS
 cd ${gfsdata}
 
-foratm='/home/fernando/roms/src/Projects/operational/rotinas_boundary_initial/gfs/'
 cp ${foratm}* .
 
 for filename in `ls GFS_F*`; do
