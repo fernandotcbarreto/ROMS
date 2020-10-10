@@ -101,6 +101,9 @@ else:
   imla2 = np.where(np.absolute(minlat)==np.absolute(minlat).min())[0][0]
   imla=max(imla1,imla2)
 
+if (iml-lim < 0) or (imxla-lim < 0) or (imxl + lim >  x_fm.shape[1]) or (imla + lim > x_fm.shape[0]):
+  lim=0
+  
 x_fm = x_fm[imxla - lim:imla + lim,iml - lim:imxl + lim]
 
 y_fm = y_fm[imxla - lim:imla + lim,iml - lim:imxl + lim]
