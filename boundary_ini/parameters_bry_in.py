@@ -52,7 +52,8 @@ monthly=False
 
 ########NESTING PARAMETERS
 
-rotated=True     # Activate if FATHER grid is rotated (son is not a problem)
+##rotated=True     # Activate if FATHER grid is rotated (son is not a problem) DEPRECATED!!!
+
 cutted=True       # Ativate if you want to interpolate from strips of father grid (pay attention when father grid is rottated)
 
 fname_grd_son='grid_rotated_ciclone_NEST.nc'   #son grid
