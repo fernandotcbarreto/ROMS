@@ -12,7 +12,7 @@ import cmocean
 
    
      
-avgfile=Dataset('HIS_FILE_20201011_5D0-20201018_5D0_fore_NEST_1_NEST_2.nc')
+avgfile=Dataset('HIS_FILE_20201012_5D0-20201019_5D0_fore_NEST_1_NEST_2.nc')
 
 fname_grd = 'abc2.nc'
 
@@ -144,13 +144,13 @@ vv=vp
 
 val=np.sqrt((uu**2)+(vv**2))
 
-a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=0.8)
+a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=1)
 #a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=val.max())
 cnt=plt.contour(x_roms,y_roms,h_roms,levels=[200],colors=('red'))
 plt.quiver(x_roms[0:-1:sp, 0:-1:sp],y_roms[0:-1:sp, 0:-1:sp],uu[0:-1:sp, 0:-1:sp], vv[0:-1:sp, 0:-1:sp])
 #plt.text(-49,-28,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
 #        bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
-plt.text(-43,-21,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
+plt.text(-43,-25,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
         bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
 plt.colorbar(a)
 plt.show()
@@ -167,13 +167,13 @@ figdates=dates.num2date(begindate+time)
 #figdates[tim].strftime("%A/%b - %-I %p" ) 
 #figdates[tim].strftime("%m%d - %-I %p")
 
-tim=0
+tim=-1
 
-lay=15
+lay=-1
 
 a=temp[tim,lay,:]
-#aa=plt.pcolor(x_roms,y_roms, np.squeeze(a),vmin=21,vmax=27)
-aa=plt.pcolor(x_roms,y_roms, np.squeeze(a))
+aa=plt.pcolor(x_roms,y_roms, np.squeeze(a),vmin=21,vmax=27)
+#aa=plt.pcolor(x_roms,y_roms, np.squeeze(a))
 plt.colorbar(aa)
 plt.text(-40,-18,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
         bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
@@ -181,7 +181,7 @@ plt.show()
 
 
 
-plt.pcolor(x_roms,y_roms, h_roms,vmax=200);plt.colorbar();plt.show()
+#plt.pcolor(x_roms,y_roms, h_roms,vmax=200);plt.colorbar();plt.show()
 
 ################WIND
 
@@ -387,7 +387,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.patheffects as PathEffects
 import cmocean
      
-avgfile=Dataset('HIS_FILE_20201010_5D0-20201017_5D0_fore.nc')
+avgfile=Dataset('HIS_FILE_20201012_5D0-20201019_5D0_fore.nc')
 
 fname_grd = 'azul_grd2.nc'
 
@@ -463,7 +463,7 @@ v1=np.ma.masked_invalid(intv)
 
 
      
-avgfile=Dataset('HIS_FILE_20201010_5D0-20201017_5D0_fore_NEST_1.nc')
+avgfile=Dataset('HIS_FILE_20201012_5D0-20201019_5D0_fore_NEST_1.nc')
 
 fname_grd = 'abc1.nc'
 
@@ -541,7 +541,7 @@ v2=np.ma.masked_invalid(intv)
 
 
      
-avgfile=Dataset('HIS_FILE_20201010_5D0-20201017_5D0_fore_NEST_1_NEST_2.nc')
+avgfile=Dataset('HIS_FILE_20201012_5D0-20201019_5D0_fore_NEST_1_NEST_2.nc')
 
 fname_grd = 'abc2.nc'
 
@@ -652,10 +652,10 @@ for tim in range(u1.shape[0]):
 #  map.drawmapscale(-39., -24.5, -39, -24.5, 100, barstyle='fancy', fontsize = 8, yoffset=5000)
   x_roms, y_roms = map(lon1,lat1)
 #
-  a=ax1.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=0.80)
+  a=ax1.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=1.0)
   ax1.quiver(x_roms[0:-1:sp, 0:-1:sp],y_roms[0:-1:sp, 0:-1:sp],uu[0:-1:sp, 0:-1:sp], vv[0:-1:sp, 0:-1:sp])
   ax1.contourf(x_roms,y_roms,h_roms1,levels=[0,20],colors=('gainsboro'))
-  plt.text(-49.5,-17,figdates[tim].strftime("%m%d - %-I %p"), fontsize=10, fontweight='bold',
+  plt.text(-49.5,-17,figdates[tim].strftime("%b/%d - %-I %p"), fontsize=10, fontweight='bold',
         bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
   divider = make_axes_locatable(ax1)
   #cax = divider.append_axes("right", size="5%", pad=0.05)
@@ -698,7 +698,7 @@ for tim in range(u1.shape[0]):
   x_roms2, y_roms2 = map(lon2,lat2)
 #
 #
-  axins.pcolor(x_roms2,y_roms2, np.squeeze(val),vmin=val.min(),vmax=0.80)
+  axins.pcolor(x_roms2,y_roms2, np.squeeze(val),vmin=val.min(),vmax=1.0)
   axins.contourf(x_roms2,y_roms2,h_roms2,levels=[0,20],colors=('gainsboro'))
   axins.quiver(x_roms2[0:-1:sp, 0:-1:sp],y_roms2[0:-1:sp, 0:-1:sp],uu[0:-1:sp, 0:-1:sp], vv[0:-1:sp, 0:-1:sp])
 #
@@ -735,7 +735,7 @@ for tim in range(u1.shape[0]):
   x_roms3, y_roms3 = map(lon3,lat3)
 #
 #
-  axins2.pcolor(x_roms3,y_roms3, np.squeeze(val),vmin=val.min(),vmax=0.80)
+  axins2.pcolor(x_roms3,y_roms3, np.squeeze(val),vmin=val.min(),vmax=1.0)
   axins2.quiver(x_roms3[0:-1:sp, 0:-1:sp],y_roms3[0:-1:sp, 0:-1:sp],uu[0:-1:sp, 0:-1:sp], vv[0:-1:sp, 0:-1:sp])
   axins2.contourf(x_roms3,y_roms3,h_roms3,levels=[0,20],colors=('gainsboro'))
 #
@@ -748,12 +748,12 @@ for tim in range(u1.shape[0]):
 ##plt.tight_layout()
   plt.savefig(pathfig+str(tim)+'ope.png')
 
-convert -resize 1000x800 -delay 35 -loop 0 `ls -v *.png` myimage2.gif   #maior delay mais lento
+convert -resize 1000x800 -delay 45 -loop 0 `ls -v *.png` myimage2.gif   #maior delay mais lento
 
-ffmpeg -i myimage2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" forecast.mp4
+ffmpeg -i myimage2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" forecast_p.mp4
 
-cp forecast.mp4 /mnt/c/Users/Fernando/Desktop
-
+mv forecast_p.mp4 /mnt/c/Users/Fernando/Desktop
+cp myimage2.gif /mnt/c/Users/Fernando/Desktop
 
 
 
