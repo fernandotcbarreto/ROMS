@@ -32,3 +32,11 @@
 <br />
 <br />
 <br />
+
+### 3) RMSE of the Sea Surface Temperature against MURSST data.
+
+<br />
+<br />
+<p align="center">
+  <img src="https://github.com/fernandotcbarreto/stuff/blob/main/temp.png">
+</p>
