@@ -8,7 +8,8 @@ Created by: Fernando Túlio Camilo Barreto
 <br />
 
 
-Comparison between the filtered U and V velocity fields from ROMS, Mercator, and Boia Vitória (PNBOIA) at a depth of 12.5 m.
+###Comparison between the filtered U and V velocity fields from ROMS, Mercator, and Boia Vitória (PNBOIA) at a depth of 12.5 m.
+<br />
 <br />
 
 <p align="center">
