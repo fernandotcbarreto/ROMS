@@ -4,7 +4,6 @@
 
 ## Preliminary comparison of ROMS output against measured data
 
-Created by: Fernando Túlio Camilo Barreto
 <br />
 
 
@@ -20,6 +19,7 @@ Created by: Fernando Túlio Camilo Barreto
 <br />
 <br />
 <br />
-### 1) Comparison between the filtered U and V velocity fields from ROMS, Mercator, and Boia Itajaí Vitória (PNBOIA https://www.marinha.mil.br/chm/dados-do-goos-brasil/pnboia-mapa) at a depth of 12.5 m.
+
+### 2) Comparison between the filtered U and V velocity fields from ROMS, Mercator, and Boia Itajaí Vitória (PNBOIA https://www.marinha.mil.br/chm/dados-do-goos-brasil/pnboia-mapa) at a depth of 12.5 m.
 <br />
 <br />
