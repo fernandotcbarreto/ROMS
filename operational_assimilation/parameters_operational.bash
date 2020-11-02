@@ -20,9 +20,11 @@ foratm='/home/fernando/roms/src/Projects/operational/rotinas_boundary_initial/gf
 
 ##############################################
 
-numdays=2                          #numdays to run ROMS
+numdays=4                          #number of days to run a hindcast from ''small'' spinup. 7 recommended
 
 numdaysas=2                        # number analysis (hindcast) assimilation
+
+numdaysfor=8                       #number of days for forecast
 
 
 newini=ocean_in_forecast_ciclone.in                 #name of greatest .in file
@@ -35,16 +37,23 @@ hisinterson=12   #hours interval for nested grid (important for nesting)
 
 DoNest=TRUE         # TRUE OR FALSE  no space between =, if TRUE perform nesting
 
-son_grids=(abc1.nc abc2.nc)  #name of son grids seperated by space ex: son_grids=(son1.nc son2.nc)
+#son_grids=(abc1.nc abc2.nc)  #name of son grids seperated by space ex: son_grids=(son1.nc son2.nc)
+
+son_grids=(abc2.nc)  #name of son grids seperated by space ex: son_grids=(son1.nc son2.nc)
 
 
-DTSON=(300 300)  #timestep in seconds of son grids seperated by space 
+#DTSON=(300 300)  #timestep in seconds of son grids seperated by space 
 
-#DTSON=150
+DTSON=300
 
-fathergrid='azul_grd2.nc'
+fathergrid='abc1.nc'
+
+#fathergrid='azul_grd2.nc'
 
 DT=360.          # timestep in second of the father grid
+
+
+dly=1          # If 1 begin simulation 1 day before to accomodate Data assimilation (MUR release data 1 day after)
 ################################ INFO NEST 1
 
 #hindcastnest=hiscast_nest1.in

@@ -2,18 +2,23 @@ source parameters_operational.bash
 
 BEGINRUN=TRUE
 
+numdaysrun=($(
+python - <<EOF
+print($numdays - 0.5)
+EOF
+))
 
 ####HINDCAST
 
 nameini=operational_in.in                              
-rstday=1.
+rstday=0.5
 
 
 inig=-$numdays
-endg=1
+endg=0
 
-inim=$inig         # always 1 minus gfs
-endm=$(($endg-1))  #simulation will start at 12 PM, mercator reference
+inim=$inig         # 
+endm=$(($endg))  #simulation will start at 12 PM, mercator reference
 
 
 
@@ -169,7 +174,7 @@ sizegrid=($(
 python - <<EOF
 from netCDF4 import Dataset
 file=Dataset('${fathergrid}')
-ntimes=$numdays*24*60*60/($DT)
+ntimes=$numdaysrun*24*60*60/($DT)
 rsttime=$rstday*24*60*60/($DT)
 histime=$hisinterson*60*60/($DT)
 #print(some_text)
@@ -197,7 +202,7 @@ sed -i "0,/NAVG ==.*/{s/NAVG ==.*/NAVG == 0/}" ${newini}   #no outputing avg
 sed -i "0,/DT ==.*/{s/DT ==.*/DT == ${DT}/}" ${newini}
 
 
-TIME_REF=`date --date "$inim days" +%Y%m%d`.5D0   #begin at 12 PM
+TIME_REF=`date --date "$inig days" +%Y%m%d`.5D0   #begin at 12 PM
  
 sed -i "0,/TIME_REF =.*/{s/TIME_REF =.*/TIME_REF = $TIME_REF/}" ${newini}
 
@@ -212,7 +217,7 @@ sed -i "0,/LcycleRST ==.*/{s/LcycleRST ==.*/LcycleRST == F/}" ${newini}   #need 
 
 ##RST AND HIS NAME
 
-TIME_END=`date --date "$endm days" +%Y%m%d`.5D0   #begin at 12 PM
+TIME_END=`date --date "$endg days" +%Y%m%d`.0D0   #begin at 00 AM
 
 sed -i "0,/HISNAME ==.*/{s/HISNAME ==.*/HISNAME == HIS_FILE_`echo ${TIME_REF} | sed "s/\./_/"`-`echo ${TIME_END} | sed "s/\./_/"`_hind.nc/}" ${newini}   #no outputing avg
 
@@ -247,11 +252,11 @@ source parameters_operational.bash
 rstday=1.
 
 
-inig=-$numdaysas
-endg=$((1))
+inig=$((-$numdaysas -$dly))
+endg=$((0 -$dly))
 
-inim=$inig         # always 1 minus gfs
-endm=$(($endg-1))  #simulation will start at 12 PM, mercator reference
+inim=$(($inig -1))        # always 1 minus gfs
+endm=$(($endg ))  #simulation will start at 0 AM, mercator reference
 
 ################################# PROCESSING .IN FILE
 
@@ -289,7 +294,7 @@ sed -i "0,/NAVG ==.*/{s/NAVG ==.*/NAVG == 0/}" ${newini}   #no outputing avg
 sed -i "0,/DT ==.*/{s/DT ==.*/DT == ${DT}/}" ${newini}
 
 
-TIME_REF=`date --date "$inim days" +%Y%m%d`.5D0   #begin at 12 PM
+TIME_REF=`date --date "$inig days" +%Y%m%d`.0D0   #begin at 00 AM
 
  
 sed -i "0,/TIME_REF =.*/{s/TIME_REF =.*/TIME_REF = $TIME_REF/}" ${newini}
@@ -305,11 +310,11 @@ sed -i "0,/LcycleRST ==.*/{s/LcycleRST ==.*/LcycleRST == F/}" ${newini}      #Ne
 
 ##RST AND HIS NAME
 
-TIME_END=`date --date "$endm days" +%Y%m%d`.5D0   #begin at 12 PM
+TIME_END=`date --date "$endg days" +%Y%m%d`.0D0   #begin at 00 AM
 
-inim=$(($inim + 1)) # RST of tomorrow is today plus 1, write new RST NAME
+inim=$(($endg +dly)) # RST of tomorrow is today plus 1, write new RST NAME
 
-TIME_FOR=`date --date "$inim days" +%Y%m%d`.5D0   #begin at 12 PM
+TIME_FOR=`date --date "$inim days" +%Y%m%d`.0D0   #begin at 00 AM
 
 sed -i "0,/HISNAME ==.*/{s/HISNAME ==.*/HISNAME == HIS_FILE_`echo ${TIME_REF} | sed "s/\./_/"`-`echo ${TIME_END} | sed "s/\./_/"`_fore.nc/}" ${newini}   #no outputing avg
 
@@ -319,9 +324,9 @@ sed -i "0,/RSTNAME ==.*/{s/RSTNAME ==.*/RSTNAME == RST_FILE_`echo ${TIME_END} | 
 
 #####INI FILE COMES FROM RESTART
 
-sed -i "0,/ININAME.*/{s@ININAME.*@ININAME == RST_FILE_`echo ${TIME_END} | sed "s/\./_/"`.nc@}"  ${newini}
+sed -i "0,/ININAME.*/{s@ININAME.*@ININAME == RST_FILE_`echo ${TIME_FOR} | sed "s/\./_/"`.nc@}"  ${newini}
 
-rstfile=\'RST_FILE_`echo ${TIME_END} | sed "s/\./_/"`.nc\'
+rstfile=\'RST_FILE_`echo ${TIME_FOR} | sed "s/\./_/"`.nc\'
 
 
 
@@ -331,7 +336,7 @@ from netCDF4 import Dataset
 import numpy as np
 file=Dataset($rstfile)
 #print(some_text)
-print(int((np.where(file['ocean_time'][:]/(24*60*60)==$numdays + $inig )[0])))
+print(int((np.where(file['ocean_time'][:]/(24*60*60)==$numdaysrun + $inig -$dly)[0])))
 file
 EOF
 ))
@@ -370,14 +375,14 @@ RST_FROM_HINDCAST=FALSE
 source parameters_operational.bash
 
 nameini=operational_in.in                              
-rstday=1.
+rstday=0.5
 
 
-inig=0
-endg=$(($numdays + 1))
+inig=$((0 -$dly))
+endg=$(($numdaysfor -$dly))
 
-inim=$inig         # always 1 minus gfs
-endm=$(($endg-1))  #simulation will start at 12 PM, mercator reference
+inim=$(($inig -1))         # always 1 minus gfs
+endm=$(($endg))  #simulation will start at 12 PM, mercator reference
 
 
 
@@ -532,7 +537,7 @@ sizegrid=($(
 python - <<EOF
 from netCDF4 import Dataset
 file=Dataset('${fathergrid}')
-ntimes=$numdays*24*60*60/($DT)
+ntimes=$numdaysfor*24*60*60/($DT)
 rsttime=$rstday*24*60*60/($DT)
 histime=$hisinterson*60*60/($DT)
 #print(some_text)
@@ -561,7 +566,7 @@ sed -i "0,/NAVG ==.*/{s/NAVG ==.*/NAVG == 0/}" ${newini}   #no outputing avg
 sed -i "0,/DT ==.*/{s/DT ==.*/DT == ${DT}/}" ${newini}
 
 
-TIME_REF=`date --date "$inim days" +%Y%m%d`.5D0   #begin at 12 PM
+TIME_REF=`date --date "$inig days" +%Y%m%d`.0D0   #begin at 00 AM
 
  
 sed -i "0,/TIME_REF =.*/{s/TIME_REF =.*/TIME_REF = $TIME_REF/}" ${newini}
@@ -584,11 +589,11 @@ rstfile=\'RST_FILE_`echo ${TIME_REF} | sed "s/\./_/"`_AS.nc\'
 
 ##RST AND HIS NAME
 
-TIME_END=`date --date "$endm days" +%Y%m%d`.5D0   #begin at 12 PM
+TIME_END=`date --date "$endg days" +%Y%m%d`.0D0   #begin at 00 AM
 
-inim=$(($inim + 1)) # RST of tomorrow is today plus 1, write new RST NAME
+inim=$(($inig + 1)) # RST of tomorrow is today plus 1, write new RST NAME
 
-TIME_FOR=`date --date "$inim days" +%Y%m%d`.5D0   #begin at 12 PM
+TIME_FOR=`date --date "$inim days" +%Y%m%d`.0D0   #begin at 00 AM
 
 sed -i "0,/HISNAME ==.*/{s/HISNAME ==.*/HISNAME == HIS_FILE_`echo ${TIME_REF} | sed "s/\./_/"`-`echo ${TIME_END} | sed "s/\./_/"`_fore.nc/}" ${newini}   #no outputing avg
 
