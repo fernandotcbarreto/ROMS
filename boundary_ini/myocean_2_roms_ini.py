@@ -65,6 +65,8 @@ a = dates.datestr2num(a)
 
 time_vec = np.arange(numdays) + a[0]
 
+bry_time = (time_vec - dates.datestr2num(timeref))*(24*60*60) + (12*60*60)  #Azul project is seconds since / Myocean is recorded at 12
+
 saida=np.zeros((n_time,) + (klevels,) + x_roms.shape)
 u_int3d=np.zeros((n_time,) + (klevels,) + x_roms.shape)
 v_int3d=np.zeros((n_time,) + (klevels,) + x_roms.shape)
@@ -561,7 +563,7 @@ if SAVE_INI_BRY_FILES:
         setattr(ncfile.variables['ocean_time'], 'long_name', 'Time since model initialization')
         setattr(ncfile.variables['ocean_time'], 'units', 's')
         # setattr(ncfile.variables['ocean_time'], 'calendar', '360.0 days / year')
-        ncfile.variables['ocean_time'][:]  = np.array([t0])
+        ncfile.variables['ocean_time'][:]  = bry_time
 
         # ---------------------------------------------------------------------------
         ncfile.createVariable('zeta', 'd', dimensions=('time', 'eta_rho', 'xi_rho'))
