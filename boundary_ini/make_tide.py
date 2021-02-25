@@ -17,6 +17,10 @@ from funcs_tide import *
 
 consts1 =['Q1', 'O1', 'P1', 'K1', 'N2', 'M2', 'S2', 'K2']
 
+TPXOharmonics={'MM': 0.5443747,'MF': 1.0980331,'Q1': 13.3986607,'O1': 13.9430351,'P1': 14.9589310,\
+'K1':15.0410690,'N2': 28.4397297,'M2': 28.9841042,'S2':30.0000000,'K2': 30.0821381,\
+'MN4': 57.4238319,'M4':57.9682083,'MS4': 58.9841042}
+
 #consts2 = ['MF']
 #consts = consts1+consts2
 
@@ -31,16 +35,22 @@ consts_num = len(consts)
 tide_name = np.array([ list('Q1  '), list('O1  '), list('P1  '), list('K1  '),
                        list('N2  '), list('M2  '), list('S2  '), list('K2  ')])
 #                        list('MF  ')])
-tide_period = np.array([26.8683567047119, 25.8193397521973, 24.0658893585205, 23.9344692230225, 
+tide_period1 = np.array([26.8683567047119, 25.8193397521973, 24.0658893585205, 23.9344692230225, 
                         12.6583499908447, 12.420599937439, 12, 11.9672346115112])
 #                         13.66079*24])
+
+tide_period=np.zeros(len(consts))
+
+for i in range(len(consts)):
+  tide_period[i]=360./TPXOharmonics[consts[i]]
 
 nodal_corr = 1
 
 
 # read ROMS grid
 
-roms_grid='azul_grd_era.nc'
+#roms_grid='azul_grd_era.nc'
+roms_grid='azul_grd_era_NEW_no_arraial.nc'
 
 dstgrd = get_ROMS_grid(roms_grid)
 lat = dstgrd.hgrid.lat_rho
@@ -51,7 +61,8 @@ eta, xi = lat.shape
 
 # read TPXO8 files
 
-pth_tpxo='C:/Users/Fernando/Desktop/rotinas_prooceano/tidal_data/'
+#pth_tpxo='C:/Users/Fernando/Desktop/rotinas_prooceano/tidal_data/'
+pth_tpxo='S:/DADOS/TPXO8/'
 
 srcgrd = get_nc_CGrid_TPXO8(pth_tpxo+'grid_tpxo8atlas_30_v1.nc', \
       xrange=(1770,2270), yrange=(9200,10100))
@@ -101,7 +112,7 @@ cpha = np.zeros((consts_num, eta, xi))*np.nan
 k = -1
 for cst in consts:
     k = k+1
-    print('Interpolating tide component '+consts[0])
+    print('Interpolating tide component '+cst)
     
     if cst in consts1:
         fid = nc.Dataset(pth_tpxo+'hf.'+cst.lower()+'_tpxo8_atlas_30c_v1.nc', 'r')
@@ -266,12 +277,12 @@ if savedata == 1:
     # write tidal information to nc file
     # -------------------------------------------------------------------------
     # define tidal constituents names and periods
-    tide_name = np.array([ list('Q1'), list('O1'), list('P1'), list('K1'),
-                           list('N2'), list('M2'), list('S2'), list('K2'),
-                           list('MF')])
-    tide_period = np.array([26.8683567047119, 25.8193397521973, 24.0658893585205, 23.9344692230225,
-                            12.6583499908447, 12.420599937439, 12, 11.9672346115112,
-                            13.66079*24])
+##    tide_name = np.array([ list('Q1'), list('O1'), list('P1'), list('K1'),
+##                           list('N2'), list('M2'), list('S2'), list('K2'),
+##                           list('MF')])
+##    tide_period = np.array([26.8683567047119, 25.8193397521973, 24.0658893585205, 23.9344692230225,
+##                            12.6583499908447, 12.420599937439, 12, 11.9672346115112,
+##                            13.66079*24])
 
     tide_name=tide_name[0:consts_num] 
     tide_period=tide_period[0:consts_num] 
@@ -347,7 +358,7 @@ if savedata == 1:
 
     # -------------------------------------------------------------------------
     # write data
-    name_nc[:, 0:2] = tide_name
+    name_nc[:, 0:4] = tide_name
     period_nc[:] = tide_period
 
     lat_nc[:, :] = lat
