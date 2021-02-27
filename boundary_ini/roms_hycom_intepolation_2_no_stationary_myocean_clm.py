@@ -70,7 +70,7 @@ if monthly:
 
   a=[datei, datef]
 
-  numdays= np.diff(dates.datestr2num(a)) #goes until last day of monthfclm - 1
+  numdays= np.diff(dates.datestr2num(a)) 
 
   n_time=int(numdays[0])
 
@@ -78,7 +78,9 @@ if monthly:
 
   time_vec = np.arange(numdays) + a[0]
 
-  n_time = np.arange(monthfclm) + 1  
+  ##n_time = np.arange(monthfclm) + 1       ##initial month had to be 1 (january)
+  
+  n_time = np.arange(monthiclm,monthfclm+1) ##initial month can be any
 
   nc_hycom=input_path + dates.num2date(time_vec[0]).strftime("%Y%m%d")+'.nc'
 
@@ -156,19 +158,19 @@ if monthly:
 
 else:
 
-  
   a=[timeini, timeend]
 
-  numdays= np.diff(dates.datestr2num(a)) + 1
-
-  n_time=int(numdays[0])         #number of days
+  numdays= np.diff(dates.datestr2num(a)) + step
+  numdays2=len(np.arange(0,numdays,step))
+  n_time=int(numdays2)         #number of days
 
   a = dates.datestr2num(a)
 
-  time_vec = np.arange(numdays) + a[0]
+  time_vec = np.arange(0,numdays,step) + a[0]
 
   bry_time = (time_vec - dates.datestr2num(timeref))*(24*60*60)  + (12*60*60)  #Azul project is seconds since .../ Myocean is recorded at 12 
-
+  numdays=numdays2
+  
 saida=np.zeros((n_time,) + (klevels,) + x_roms.shape)
 u_int3d=np.zeros((n_time,) + (klevels,) + x_roms.shape)
 v_int3d=np.zeros((n_time,) + (klevels,) + x_roms.shape)
@@ -384,7 +386,7 @@ vbar_int3d_1=np.zeros((n_time,)  + (x_roms.shape[0],) + (x_roms.shape[1],))
 
 dzr=abs(np.diff(zr, axis=0, append=0))
 
-for rt in range(int(numdays[0])):
+for rt in range(int(numdays)):
   ubar_int3d_1[rt,:,:] = np.sum(u_int3d[rt,:,:,:]*dzr, axis=0) / abs(zr[0,::])
   vbar_int3d_1[rt,:,:] = np.sum(v_int3d[rt,:,:,:]*dzr, axis=0) / abs(zr[0,::])
 

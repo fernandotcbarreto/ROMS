@@ -4,25 +4,30 @@
       
 lim=2
 
+step=9   #days interval, default is 1
 ######################################################################################
 
 noextra=True            # in vertical 1D interpolation uses the nearest value in extrapolation
                         # if False continues with the linear interpolation
 
-timeini = '2020-06-26 00:00:00'
+timeini = '2014-11-01 00:00:00'
 
-timeend = '2020-07-03 00:00:00'
+timeend = '2014-11-03 00:00:00'
 
 timeref = '2013-01-01 00:00:00'                   # Reference time at bry file. Azul project is seconds since 2013-01-01 00:00:00]
 
-input_path='/home/fernando/roms/src/Projects/operational/mercator_data/MYOCEAN_AZUL_FORECAST_'
+#input_path='/home/fernando/roms/src/Projects/operational/mercator_data/MYOCEAN_AZUL_FORECAST_'
 
-#input_path='C:\Users\Fernando\Downloads\CMEMS_BEST_ANALYSIS_20130213_20130513.tar\CMEMS_BEST_ANALYSIS_20130213_20130513\CMEMS_BEST_ANALYSIS_'    # directory with myocean data
+#input_path='R:\Modelos\CMEMS_BEST_ANALYSIS\CMEMS_BEST_ANALYSIS_'    # directory with myocean data
+
+#input_path='/mnt/c/Users/Fernando/Desktop/rotinas_prooceano/download_my_ocean/CMEMS_BEST_ANALYSIS_'    # directory with myocean data
+
+input_path='R:/Modelos/CMEMS_BEST_ANALYSIS/CMEMS_BEST_ANALYSIS_'
 
 
 run_name = '20200626'      # name for bry and ini files
 
-fname_grd = 'grid_rotated_ciclone.nc'                       # ROMS grid   
+fname_grd = 'BRSE_2012_GRD.nc'                       # ROMS grid   
 
 #fname_grd = 'rtte.nc'
 
@@ -44,7 +49,7 @@ yearclm=2016
 
 monthiclm=4                        #initial month
 
-monthfclm=5                        #final month, will be computded 3 months
+monthfclm=5                        #final month
 
 monthly=False
 ##################### parameters
