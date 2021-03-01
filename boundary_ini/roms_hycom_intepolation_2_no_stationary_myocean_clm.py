@@ -493,8 +493,6 @@ if False:
 plt.close('all')
 # Saving initial conditions file.
 if SAVE_INI_BRY_FILES:
-        filenamestr = '_iniNOUSE.nc'
-        filetypestr = 'ROMS initial conditions file'
 
         ## Renaming variables before saving.
         temp, salt, u, v, ubar, vbar = temp_int3d, salt_int3d, u_int3d, v_int3d, ubar_int3d, vbar_int3d
@@ -503,242 +501,11 @@ if SAVE_INI_BRY_FILES:
 #        ubar=ubar*0
 #        vbar=vbar*0
 #        zeta=zeta*0
-        
-        ##########################################################
-        ### - Write initial conditions netcdf file (*_ini.nc). ###
-        ##########################################################
-        print ("")
-        print ("Writing initial conditions file.")
 
         if Spherical:
             spherical = 'T'
         else:
             spherical = 'F'
-
-        ### NOTE: Setting the initial model time to 0.
-        t0 = 0.
-        outfile = run_name + filenamestr
-        ncfile = Dataset(outfile, mode='w', clobber='true', format='NETCDF3_CLASSIC')
-
-        ncfile.createDimension('xi_rho', size=L)
-        ncfile.createDimension('xi_u', size=Lm)
-        ncfile.createDimension('xi_v', size=L)
-        ncfile.createDimension('eta_rho', size=M)
-        ncfile.createDimension('eta_u', size=M)
-        ncfile.createDimension('eta_v', size=Mm)
-        ncfile.createDimension('s_rho', size=int(klevels))
-        ncfile.createDimension('s_w', size=int(klevels+1))
-        # ncfile.createDimension('tracer', size=2)
-        ncfile.createDimension('time', size=1)
-        ncfile.createDimension('one', size=1)
-
-        # creating GLOBAL ATTRIBUTES
-        now = dt.now()
-        setattr(ncfile, 'type', filetypestr)
-        setattr(ncfile, 'out_file', outfile)
-        setattr(ncfile, 'grd_file', fname_grd)
-        setattr(ncfile, 'history', str(now))
-
-        #############################################################################
-        # creating VARIABLES, ATTRIBUTES and ASSIGNING VALUES
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('spherical', 'c')
-        setattr(ncfile.variables['spherical'], 'long_name', 'Grid type logical switch')
-        setattr(ncfile.variables['spherical'], 'option_T', 'spherical')
-        setattr(ncfile.variables['spherical'], 'option_F', 'cartesian')
-        ncfile.variables['spherical'][:]  = spherical
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('Vtransform', 'i', dimensions=('one'))
-        setattr(ncfile.variables['Vtransform'], 'long_name', 'Vertical terrain-following transformation equation')
-        ncfile.variables['Vtransform'][:]  = np.int(Vtransform)
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('Vstretching', 'i', dimensions=('one'))
-        setattr(ncfile.variables['Vstretching'], 'long_name', 'Vertical terrain-following stretching function')
-        ncfile.variables['Vstretching'][:]  = np.int(Vstretching)
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('theta_s', 'd', dimensions=('one'))
-        setattr(ncfile.variables['theta_s'], 'long_name', 'S-coordinate surface control parameter')
-        ncfile.variables['theta_s'][:]  = np.array(scoord.theta_s)
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('theta_b', 'd', dimensions=('one'))
-        setattr(ncfile.variables['theta_b'], 'long_name', 'S-coordinate bottom control parameter')
-        ncfile.variables['theta_b'][:]  = np.array(scoord.theta_b)
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('Tcline', 'd', dimensions=('one'))
-        setattr(ncfile.variables['Tcline'], 'long_name', 'S-coordinate surface/bottom layer width')
-        setattr(ncfile.variables['Tcline'], 'units', 'm')
-        ncfile.variables['Tcline'][:]  = np.array(scoord.Tcline)
-
-        ###### Let ROMS compute hc internally to avoid NETCDF_CHECK_VAR error.
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('hc', 'd', dimensions=('one'))
-        setattr(ncfile.variables['hc'], 'long_name', 'S-coordinate parameter, critical depth')
-        setattr(ncfile.variables['hc'], 'units', 'm')
-        ncfile.variables['hc'][:]  = np.array(scoord.hc)
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('s_rho', 'd', dimensions=('s_rho'))
-        setattr(ncfile.variables['s_rho'], 'long_name', 'S-coordinate at RHO-points')
-        setattr(ncfile.variables['s_rho'], 'valid_min', -1.)
-        setattr(ncfile.variables['s_rho'], 'valid_max', 0.)
-        setattr(ncfile.variables['s_rho'], 'positive', 'up')
-        if np.int(Vtransform)==1:
-            setattr(ncfile.variables['s_rho'], 'standard_name', 'ocean_s_coordinate_g1')
-        elif np.int(Vtransform)==2:
-            setattr(ncfile.variables['s_rho'], 'standard_name', 'ocean_s_coordinate_g2')
-        setattr(ncfile.variables['s_rho'], 'formula_terms', 's: s_rho C: Cs_r eta: zeta depth: h depth_c: hc')
-        ncfile.variables['s_rho'][:]  = scoord.s_rho
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('s_w', 'd', dimensions=('s_w'))
-        setattr(ncfile.variables['s_w'], 'long_name', 'S-coordinate at W-points')
-        setattr(ncfile.variables['s_w'], 'valid_min', -1.)
-        setattr(ncfile.variables['s_w'], 'valid_max', 0.)
-        setattr(ncfile.variables['s_w'], 'positive', 'up')
-        if np.int(Vtransform)==1:
-            setattr(ncfile.variables['s_rho'], 'standard_name', 'ocean_s_coordinate_g1')
-        elif np.int(Vtransform)==2:
-            setattr(ncfile.variables['s_rho'], 'standard_name', 'ocean_s_coordinate_g2')
-        setattr(ncfile.variables['s_w'], 'formula_terms', 's: s_rho C: Cs_w eta: zeta depth: h depth_c: hc')
-        ncfile.variables['s_w'][:]  = scoord.s_w
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('Cs_r', 'd', dimensions=('s_rho'))
-        setattr(ncfile.variables['Cs_r'], 'long_name', 'S-coordinate stretching curve at RHO-points')
-        setattr(ncfile.variables['Cs_r'], 'valid_min', -1.)
-        setattr(ncfile.variables['Cs_r'], 'valid_max', 0.)
-        ncfile.variables['Cs_r'][:]  = scoord.Cs_r
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('Cs_w', 'd', dimensions=('s_w'))
-        setattr(ncfile.variables['Cs_w'], 'long_name', 'S-coordinate stretching curve at W-points')
-        setattr(ncfile.variables['Cs_w'], 'valid_min', -1.)
-        setattr(ncfile.variables['Cs_w'], 'valid_max', 0.)
-        ncfile.variables['Cs_w'][:]  = scoord.Cs_w
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('h', 'd', dimensions=('eta_rho', 'xi_rho'))
-        setattr(ncfile.variables['h'], 'long_name', 'Final bathymetry at RHO-points')
-        setattr(ncfile.variables['h'], 'units', 'm')
-        setattr(ncfile.variables['h'], 'coordinates', 'lon_rho lat_rho')
-        ncfile.variables['h'][:]  = h_roms
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('lon_rho', 'd', dimensions=('eta_rho', 'xi_rho'))
-        setattr(ncfile.variables['lon_rho'], 'long_name', 'Longitude of RHO-points')
-        setattr(ncfile.variables['lon_rho'], 'units', 'Degrees_east')
-        setattr(ncfile.variables['lon_rho'], 'standard_name', 'longitude')
-        ncfile.variables['lon_rho'][:]  = grd.variables['lon_rho'][:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('lat_rho', 'd', dimensions=('eta_rho', 'xi_rho'))
-        setattr(ncfile.variables['lat_rho'], 'long_name', 'Latitude of RHO-points')
-        setattr(ncfile.variables['lat_rho'], 'units', 'Degrees_north')
-        setattr(ncfile.variables['lat_rho'], 'standard_name', 'latitude')
-        ncfile.variables['lat_rho'][:]  = grd.variables['lat_rho'][:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('lon_u', 'd', dimensions=('eta_u', 'xi_u'))
-        setattr(ncfile.variables['lon_u'], 'long_name', 'Longitude of U-points')
-        setattr(ncfile.variables['lon_u'], 'units', 'Degrees_east')
-        setattr(ncfile.variables['lon_u'], 'standard_name', 'longitude')
-        ncfile.variables['lon_u'][:]  = grd.variables['lon_u'][:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('lat_u', 'd', dimensions=('eta_u', 'xi_u'))
-        setattr(ncfile.variables['lat_u'], 'long_name', 'Latitude of U-points')
-        setattr(ncfile.variables['lat_u'], 'units', 'Degrees_north')
-        setattr(ncfile.variables['lat_u'], 'standard_name', 'latitude')
-        ncfile.variables['lat_u'][:]  = grd.variables['lat_u'][:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('lon_v', 'd', dimensions=('eta_v', 'xi_v'))
-        setattr(ncfile.variables['lon_v'], 'long_name', 'Longitude of V-points')
-        setattr(ncfile.variables['lon_v'], 'units', 'Degrees_east')
-        setattr(ncfile.variables['lon_v'], 'standard_name', 'longitude')
-        ncfile.variables['lon_v'][:]  = grd.variables['lon_v'][:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('lat_v', 'd', dimensions=('eta_v', 'xi_v'))
-        setattr(ncfile.variables['lat_v'], 'long_name', 'Latitude of V-points')
-        setattr(ncfile.variables['lat_v'], 'units', 'Degrees_north')
-        setattr(ncfile.variables['lat_v'], 'standard_name', 'latitude')
-        ncfile.variables['lat_v'][:]  = grd.variables['lat_v'][:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('ocean_time', 'd', dimensions=('time'))
-        setattr(ncfile.variables['ocean_time'], 'long_name', 'Time since model initialization')
-        setattr(ncfile.variables['ocean_time'], 'units', 's')
-        # setattr(ncfile.variables['ocean_time'], 'calendar', '360.0 days / year')
-        ncfile.variables['ocean_time'][:]  = np.array([t0])
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('zeta', 'd', dimensions=('time', 'eta_rho', 'xi_rho'))
-        setattr(ncfile.variables['zeta'], 'long_name', 'Free-surface elevation anomaly')
-        setattr(ncfile.variables['zeta'], 'units', 'm')
-        setattr(ncfile.variables['zeta'], 'coordinates', 'lon_rho lat_rho ocean_time')
-        ncfile.variables['zeta'][:]  = zeta[0,:,:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('ubar', 'd', dimensions=('time', 'eta_u', 'xi_u'))
-        setattr(ncfile.variables['ubar'], 'long_name', 'Zonal component of the vertically-integrated total velocity')
-        setattr(ncfile.variables['ubar'], 'units', 'm s^{-1}')
-        setattr(ncfile.variables['ubar'], 'coordinates', 'lon_u lat_u ocean_time')
-        ncfile.variables['ubar'][:]  = ubar[0,:,:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('vbar', 'd', dimensions=('time', 'eta_v', 'xi_v'))
-        setattr(ncfile.variables['vbar'], 'long_name', 'Meridional component of the vertically-integrated total velocity')
-        setattr(ncfile.variables['vbar'], 'units', 'm s^{-1}')
-        setattr(ncfile.variables['vbar'], 'coordinates', 'lon_v lat_v ocean_time')
-        ncfile.variables['vbar'][:]  = vbar[0,:,:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('u', 'd', dimensions=('time', 's_rho', 'eta_u', 'xi_u'))
-        setattr(ncfile.variables['u'], 'long_name', 'Zonal component of the total velocity')
-        setattr(ncfile.variables['u'], 'units', 'm s^{-1}')
-        setattr(ncfile.variables['u'], 'coordinates', 'lon_u lat_u s_rho ocean_time')
-        ncfile.variables['u'][:]  = u[0,:,:,:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('v', 'd', dimensions=('time', 's_rho', 'eta_v', 'xi_v'))
-        setattr(ncfile.variables['v'], 'long_name', 'Meridional component of the total velocity')
-        setattr(ncfile.variables['v'], 'units', 'm s^{-1}')
-        setattr(ncfile.variables['v'], 'coordinates', 'lon_v lat_v s_rho ocean_time')
-        ncfile.variables['v'][:]  = v[0,:,:,:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('temp', 'd', dimensions=('time', 's_rho', 'eta_rho', 'xi_rho'))
-        setattr(ncfile.variables['temp'], 'long_name', 'Potential temperature')
-        setattr(ncfile.variables['temp'], 'units', 'Degrees Celsius')
-        setattr(ncfile.variables['temp'], 'coordinates', 'lon_rho lat_rho s_rho ocean_time')
-        ncfile.variables['temp'][:]  = temp[0,:,:,:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('salt', 'd', dimensions=('time', 's_rho', 'eta_rho', 'xi_rho'))
-        setattr(ncfile.variables['salt'], 'long_name', 'Practical salinity')
-        setattr(ncfile.variables['salt'], 'units', 'Practical salinity units, psu (PSS-78)')
-        setattr(ncfile.variables['salt'], 'coordinates', 'lon_rho lat_rho s_rho ocean_time')
-        ncfile.variables['salt'][:]  = salt[0,:,:,:]
-
-        # ---------------------------------------------------------------------------
-        ncfile.createVariable('dye_01', 'd', dimensions=('time', 's_rho', 'eta_rho', 'xi_rho'))
-        setattr(ncfile.variables['dye_01'], 'long_name', 'Dye concentration')
-        setattr(ncfile.variables['dye_01'], 'units', 'kilogram meter-3')
-        setattr(ncfile.variables['dye_01'], 'coordinates', 'lon_rho lat_rho s_rho ocean_time')
-        ncfile.variables['dye_01'][:]  = dye[0,:,:,:]
-
-        #############################################################################
-        ncfile.sync()
-        ncfile.close()
-        print ("Done.")
-        print ("")
 
         ##########################################################
         ### - Write initial conditions netcdf file (*_ini.nc). ###
@@ -750,12 +517,8 @@ if SAVE_INI_BRY_FILES:
         print ("")
         print ("Writing boundary conditions file.")
 
-        ini = Dataset(outfile, mode='r') ## Open the *_ini.nc file created above.
         ##---- Slicing the 2D fields.
         
-        print ('chu')
-        print ('vsnvlksjdfgksjdfgksjhfdgjhdfghskjdfgjhfd')
-
         now = dt.now()
         outfile = run_name + filenamestr
         ncfile = Dataset(outfile, mode='w', clobber='true', format='NETCDF3_CLASSIC')
@@ -767,8 +530,8 @@ if SAVE_INI_BRY_FILES:
         ncfile.createDimension('eta_rho', size=M)
         ncfile.createDimension('eta_u', size=M)
         ncfile.createDimension('eta_v', size=Mm)
-        ncfile.createDimension('s_rho', size=ini.variables['s_rho'].size)
-        ncfile.createDimension('s_w', size=ini.variables['s_w'].size)
+        ncfile.createDimension('s_rho', size=int(klevels))
+        ncfile.createDimension('s_w', size=int(klevels+1))
         ncfile.createDimension('zeta_time', size=bry_time.size)
         ncfile.createDimension('temp_time', size=bry_time.size)
         ncfile.createDimension('salt_time', size=bry_time.size)
@@ -833,7 +596,7 @@ if SAVE_INI_BRY_FILES:
         setattr(ncfile.variables['s_rho'], 'positive', 'up')
         setattr(ncfile.variables['s_rho'], 'standard_name', 'ocean_s_coordinate_g1')
         setattr(ncfile.variables['s_rho'], 'formula_terms', 's: s_rho C: Cs_r eta: zeta depth: h depth_c: hc')
-        ncfile.variables['s_rho'][:] = ini.variables['s_rho'][:]
+        ncfile.variables['s_rho'][:] = scoord.s_rho
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('s_w', 'd', dimensions=('s_w'))
@@ -843,70 +606,70 @@ if SAVE_INI_BRY_FILES:
         setattr(ncfile.variables['s_w'], 'positive', 'up')
         setattr(ncfile.variables['s_w'], 'standard_name', 'ocean_s_coordinate_g1')
         setattr(ncfile.variables['s_w'], 'formula_terms', 's: s_rho C: Cs_w eta: zeta depth: h depth_c: hc')
-        ncfile.variables['s_w'][:] = ini.variables['s_w'][:]
+        ncfile.variables['s_w'][:] = scoord.s_w
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('Cs_r', 'd', dimensions=('s_rho'))
         setattr(ncfile.variables['Cs_r'], 'long_name', 'S-coordinate stretching curve at RHO-points')
         setattr(ncfile.variables['Cs_r'], 'valid_min', -1.)
         setattr(ncfile.variables['Cs_r'], 'valid_max', 0.)
-        ncfile.variables['Cs_r'][:] = ini.variables['Cs_r'][:]
+        ncfile.variables['Cs_r'][:] = scoord.Cs_r
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('Cs_w', 'd', dimensions=('s_w'))
         setattr(ncfile.variables['Cs_w'], 'long_name', 'S-coordinate stretching curve at W-points')
         setattr(ncfile.variables['Cs_w'], 'valid_min', -1.)
         setattr(ncfile.variables['Cs_w'], 'valid_max', 0.)
-        ncfile.variables['Cs_w'][:] = ini.variables['Cs_w'][:]
+        ncfile.variables['Cs_w'][:] = scoord.Cs_w
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('h', 'd', dimensions=('eta_rho', 'xi_rho'))
         setattr(ncfile.variables['h'], 'long_name', 'Final bathymetry at RHO-points')
         setattr(ncfile.variables['h'], 'units', 'm')
         setattr(ncfile.variables['h'], 'coordinates', 'lon_rho lat_rho')
-        ncfile.variables['h'][:] = ini.variables['h'][:]
+        ncfile.variables['h'][:] = h_roms
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lon_rho', 'd', dimensions=('eta_rho', 'xi_rho'))
         setattr(ncfile.variables['lon_rho'], 'long_name', 'Longitude of RHO-points')
         setattr(ncfile.variables['lon_rho'], 'units', 'Degrees_east')
         setattr(ncfile.variables['lon_rho'], 'standard_name', 'longitude')
-        ncfile.variables['lon_rho'][:] = ini.variables['lon_rho'][:]
+        ncfile.variables['lon_rho'][:] = grd.variables['lon_rho'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lat_rho', 'd', dimensions=('eta_rho', 'xi_rho'))
         setattr(ncfile.variables['lat_rho'], 'long_name', 'Latitude of RHO-points')
         setattr(ncfile.variables['lat_rho'], 'units', 'Degrees_north')
         setattr(ncfile.variables['lat_rho'], 'standard_name', 'latitude')
-        ncfile.variables['lat_rho'][:] = ini.variables['lat_rho'][:]
+        ncfile.variables['lat_rho'][:] = grd.variables['lat_rho'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lon_u', 'd', dimensions=('eta_u', 'xi_u'))
         setattr(ncfile.variables['lon_u'], 'long_name', 'Longitude of U-points')
         setattr(ncfile.variables['lon_u'], 'units', 'Degrees_east')
         setattr(ncfile.variables['lon_u'], 'standard_name', 'longitude')
-        ncfile.variables['lon_u'][:] = ini.variables['lon_u'][:]
+        ncfile.variables['lon_u'][:] = grd.variables['lon_u'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lat_u', 'd', dimensions=('eta_u', 'xi_u'))
         setattr(ncfile.variables['lat_u'], 'long_name', 'Latitude of U-points')
         setattr(ncfile.variables['lat_u'], 'units', 'Degrees_north')
         setattr(ncfile.variables['lat_u'], 'standard_name', 'latitude')
-        ncfile.variables['lat_u'][:] = ini.variables['lat_u'][:]
+        ncfile.variables['lat_u'][:] = grd.variables['lat_u'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lon_v', 'd', dimensions=('eta_v', 'xi_v'))
         setattr(ncfile.variables['lon_v'], 'long_name', 'Longitude of V-points')
         setattr(ncfile.variables['lon_v'], 'units', 'Degrees_east')
         setattr(ncfile.variables['lon_v'], 'standard_name', 'longitude')
-        ncfile.variables['lon_v'][:] = ini.variables['lon_v'][:]
+        ncfile.variables['lon_v'][:] = grd.variables['lon_v'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lat_v', 'd', dimensions=('eta_v', 'xi_v'))
         setattr(ncfile.variables['lat_v'], 'long_name', 'Latitude of V-points')
         setattr(ncfile.variables['lat_v'], 'units', 'Degrees_north')
         setattr(ncfile.variables['lat_v'], 'standard_name', 'latitude')
-        ncfile.variables['lat_v'][:] = ini.variables['lat_v'][:]
+        ncfile.variables['lat_v'][:] = grd.variables['lat_v'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('zeta_time', 'd', dimensions=('zeta_time'))
@@ -1015,6 +778,4 @@ if SAVE_INI_BRY_FILES:
         ncfile.close()
         print ("Done.")
         print ("")
-
-        ini.close()
         grd.close()
