@@ -36,4 +36,4 @@ c.retrieve(
         ],
         'format':'netcdf'
     },
-    'downward_long_2016.nc')
+    'downward_long_'+year+'.nc')

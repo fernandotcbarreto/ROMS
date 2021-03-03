@@ -36,4 +36,4 @@ c.retrieve(
         ],
         'format':'netcdf'
     },
-    'net_solar_2016.nc')
+    'net_solar_'+year+'.nc')

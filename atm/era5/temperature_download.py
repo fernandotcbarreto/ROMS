@@ -36,4 +36,4 @@ c.retrieve(
         ],
         'format':'netcdf'
     },
-    'download_temperature_2016.nc')
+    'download_temperature_'+year+'.nc')

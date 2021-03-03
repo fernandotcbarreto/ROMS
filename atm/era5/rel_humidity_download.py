@@ -38,4 +38,4 @@ c.retrieve(
         ],
         'format':'netcdf'
     },
-    'download_humidity_2016.nc')
+    'download_humidity_'+year+'.nc')

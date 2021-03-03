@@ -37,4 +37,4 @@ c.retrieve(
         ],
         'format':'netcdf'
     },
-    'precipitation_2016.nc')
+    'precipitation_'+year+'.nc')

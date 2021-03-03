@@ -36,4 +36,4 @@ c.retrieve(
         ],
         'format':'netcdf'
     },
-    'download_p_2016.nc')
+    'download_p_'+year+'.nc')
