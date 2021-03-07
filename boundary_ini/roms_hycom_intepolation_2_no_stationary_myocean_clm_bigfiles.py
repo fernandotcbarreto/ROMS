@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 #
+# Description: Interpolates Soutelino et al. (2013)'s BC/NBUC Feature Model
+#              to the smooth/realistic topography grids.
+#
+# Author:      Andre Paloczy Filho [USP(Br)/SCRIPS(USA)]
+# E-mail:      paloczy@gmail.com
+# Date:        August/2014
+# Modified to HYCOM/NCODA by Fernando Tulio Camilo Barreto [USP[Br]]
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,17 +22,10 @@ from scipy.interpolate import griddata, interp1d
 from datetime import datetime as dt
 from parameters_bry_in import *
 import matplotlib.dates as dates
-from funcs_interpolation import horiz_interp_3dvar_cut, vert_interp_3dvar_cut
-
-
-##--------------
-plt.close('all')
+from funcs_interpolation import horiz_interp_3dvar, vert_interp_3dvar
 
 
 SAVE_INI_BRY_FILES = True
-
-
-synopsis = 'Bry file Azul project'
 
 
 ## Load ROMS grid.
@@ -46,6 +46,7 @@ sina=np.sin(angle)
 cosa=np.tile(cosa, (klevels,1,1))
 
 sina=np.tile(sina, (klevels,1,1))
+
 ############  teste with roms bathymetry
 
 #h_roms[h_roms>6000]=np.nan
@@ -58,18 +59,16 @@ sina=np.tile(sina, (klevels,1,1))
 
 
 a=[timeini, timeend]
-
-numdays= np.diff(dates.datestr2num(a)) + 1
-
-n_time=int(numdays[0])
+numdays= np.diff(dates.datestr2num(a)) + step
+numdays2=len(np.arange(0,numdays,step))
+n_time=int(numdays2)         #number of days
 
 a = dates.datestr2num(a)
 
-time_vec = np.arange(numdays) + a[0]
+time_vec = np.arange(0,numdays,step) + a[0]
 
-#bry_time = (time_vec - dates.datestr2num(timeref))*(24*60*60)   #Azul project is seconds since ...
-
-bry_time2 = (time_vec - dates.datestr2num(timeref))*(24*60*60) + (12*60*60)  #Azul project is seconds since / Myocean is recorded at 12 
+bry_time2 = (time_vec - dates.datestr2num(timeref))*(24*60*60)  + (12*60*60)  #Azul project is seconds since .../ Myocean is recorded at 12 
+numdays=numdays2
 
 ntime_or=n_time
 
@@ -77,10 +76,9 @@ frevec=np.arange(0,ntime_or, freq)
 
 frevec2=np.append(frevec,n_time)
 
-
 for i in range(len(frevec)):
   n_time=frevec2[i+1]-frevec2[i]
-
+ 
   saida=np.zeros((n_time,) + (klevels,) + x_roms.shape)
   u_int3d=np.zeros((n_time,) + (klevels,) + x_roms.shape)
   v_int3d=np.zeros((n_time,) + (klevels,) + x_roms.shape)
@@ -89,18 +87,21 @@ for i in range(len(frevec)):
   zeta=np.zeros((n_time,)  + x_roms.shape)
 
   ubar_int3d=np.zeros((n_time,)  + (x_roms.shape[0],) + (x_roms.shape[1]-1,))
-
+ 
   vbar_int3d=np.zeros((n_time,)  + (x_roms.shape[0]-1,) + (x_roms.shape[1],))
 
 
   dye=np.zeros((n_time,) + (klevels,) + x_roms.shape)
   
   bry_time=bry_time2[frevec2[i]: frevec2[i+1]]
-  
+ 
   for rt in np.arange(frevec2[i], frevec2[i+1]):
+  
   #load HYCOM DATA
  
     nc_hycom=input_path + dates.num2date( time_vec[rt]).strftime("%Y%m%d")+'.nc'
+
+    print('########################## day = ' + str(rt+1) + ' #########################' )
     print(nc_hycom)
 
     file=Dataset(nc_hycom)
@@ -109,9 +110,9 @@ for i in range(len(frevec)):
 
     y_fm=file['latitude'][:]
     y_fm=y_fm[::-1] 
-
+  
     x_fm,y_fm=np.meshgrid(x_fm,y_fm)
-   
+  
     minlon = x_fm[0,:] - x_roms.min()
     iml = np.where(np.absolute(minlon)==np.absolute(minlon).min())[0][0]
     maxlon = x_fm[0,:] - x_roms.max()
@@ -131,28 +132,28 @@ for i in range(len(frevec)):
     temp_fm=np.squeeze(file['thetao'][:])
     temp_fm=temp_fm.filled()
     temp_fm[temp_fm<-100]=np.nan
-    temp_fm=temp_fm[::-1,::-1,:]
 
     salt_fm=np.squeeze(file['so'][:])
     salt_fm=salt_fm.filled()
     salt_fm[salt_fm<-100]=np.nan
-    salt_fm=salt_fm[::-1,::-1,:]
 
     u_fm=np.squeeze(file['uo'][:])
     u_fm=u_fm.filled()  
     u_fm[u_fm<-100]=np.nan
-    u_fm=u_fm[::-1,::-1,:]
 
     v_fm=np.squeeze(file['vo'][:])
     v_fm=v_fm.filled()  
     v_fm[v_fm<-100]=np.nan  
-    v_fm=v_fm[::-1,::-1,:]
 
     ssh_fm = np.squeeze((file['zos'][:]))
     ssh_fm=ssh_fm.filled()  
     ssh_fm[ssh_fm<-100]=np.nan  
-    ssh_fm=ssh_fm[::-1,:]
 
+    temp_fm=temp_fm[::-1,::-1,:]
+    salt_fm=salt_fm[::-1,::-1,:]
+    u_fm=u_fm[::-1,::-1,:]
+    v_fm=v_fm[::-1,::-1,:]
+    ssh_fm=ssh_fm[::-1,:]
 
     temp_fm = temp_fm[:,imxla - lim:imla + lim,iml - lim:imxl + lim]
     salt_fm = salt_fm[:,imxla - lim:imla + lim,iml - lim:imxl + lim]
@@ -160,15 +161,6 @@ for i in range(len(frevec)):
     v_fm = v_fm[:,imxla - lim:imla + lim,iml - lim:imxl + lim]
     ssh_fm = ssh_fm[imxla - lim:imla + lim,iml - lim:imxl + lim]
      
-    rotat= y_fm[:,0] - y_roms[-1,:].min()
-    nrot = np.where(np.absolute(rotat)==np.absolute(rotat).min())[0][0]
-    rotat= y_fm[:,0] - y_roms[0,:].max()
-    srot = np.where(np.absolute(rotat)==np.absolute(rotat).min())[0][0]
-    rotat = x_fm[0,:] - x_roms[:,-1].min()
-    erot = np.where(np.absolute(rotat)==np.absolute(rotat).min())[0][0]
-    rotat = x_fm[0,:] - x_roms[:,0].max()
-    wrot = np.where(np.absolute(rotat)==np.absolute(rotat).min())[0][0]
-
   
     if True:
         ## Horizontally interpolate free-surface height.
@@ -182,54 +174,18 @@ for i in range(len(frevec)):
         points = (x_roms[~f],y_roms[~f])
         zeta_int2d = griddata(points, zeta_int2d[~f], interp_points, method='nearest').reshape(sh2)
         np.save('ZETA_int2d.npy',zeta_int2d)
-        
         ## Interpolate U, V, TEMP and SALT horizontally to the ROMS grid points.
-        U_int2d = np.zeros([u_fm.shape[0], x_roms.shape[0], x_roms.shape[1]])
-        a = horiz_interp_3dvar_cut(u_fm, x_fm, y_fm, -z_fm, x_roms[-2:,:], y_roms[-2:,:], h_roms, 'N', nrot)
-        U_int2d[:,-2:,:] = a
-        a = horiz_interp_3dvar_cut(u_fm, x_fm, y_fm, -z_fm, x_roms[0:2,:], y_roms[0:2,:], h_roms, 'S', srot)
-        U_int2d[:,0:2,:] = a
-        a = horiz_interp_3dvar_cut(u_fm, x_fm, y_fm, -z_fm, x_roms[:,0:2], y_roms[:,0:2], h_roms, 'W', wrot)
-        U_int2d[:,:,0:2] = a
-        a = horiz_interp_3dvar_cut(u_fm, x_fm, y_fm, -z_fm, x_roms[:,-2:], y_roms[:,-2:], h_roms, 'E', erot)
-        U_int2d[:,:,-2:] = a        
-        np.save('U_int2d.npy', U_int2d); del U_int2d
+        U_int2d = horiz_interp_3dvar(u_fm, x_fm, y_fm, -z_fm, x_roms, y_roms, h_roms)
+        np.save('U_int2d.npy', U_int2d.filled()); del U_int2d
 
-        V_int2d = np.zeros([v_fm.shape[0], x_roms.shape[0], x_roms.shape[1]])
-        a = horiz_interp_3dvar_cut(v_fm, x_fm, y_fm, -z_fm, x_roms[-2:,:], y_roms[-2:,:], h_roms, 'N', nrot)
-        V_int2d[:,-2:,:] = a
-        a = horiz_interp_3dvar_cut(v_fm, x_fm, y_fm, -z_fm, x_roms[0:2,:], y_roms[0:2,:], h_roms, 'S', srot)
-        V_int2d[:,0:2,:] = a
-        a = horiz_interp_3dvar_cut(v_fm, x_fm, y_fm, -z_fm, x_roms[:,0:2], y_roms[:,0:2], h_roms, 'W', wrot)
-        V_int2d[:,:,0:2] = a
-        a = horiz_interp_3dvar_cut(v_fm, x_fm, y_fm, -z_fm, x_roms[:,-2:], y_roms[:,-2:], h_roms, 'E', erot)
-        V_int2d[:,:,-2:] = a        
-        np.save('V_int2d.npy', V_int2d); del V_int2d
+        V_int2d = horiz_interp_3dvar(v_fm, x_fm, y_fm, -z_fm, x_roms, y_roms, h_roms)
+        np.save('V_int2d.npy', V_int2d.filled()); del V_int2d
 
-          
-        TEMP_int2d = np.zeros([temp_fm.shape[0], x_roms.shape[0], x_roms.shape[1]])
-        a = horiz_interp_3dvar_cut(temp_fm, x_fm, y_fm, -z_fm, x_roms[-2:,:], y_roms[-2:,:], h_roms, 'N', nrot)
-        TEMP_int2d[:,-2:,:] = a
-        a = horiz_interp_3dvar_cut(temp_fm, x_fm, y_fm, -z_fm, x_roms[0:2,:], y_roms[0:2,:], h_roms, 'S', srot)
-        TEMP_int2d[:,0:2,:] = a
-        a = horiz_interp_3dvar_cut(temp_fm, x_fm, y_fm, -z_fm, x_roms[:,0:2], y_roms[:,0:2], h_roms, 'W', wrot)
-        TEMP_int2d[:,:,0:2] = a
-        a = horiz_interp_3dvar_cut(temp_fm, x_fm, y_fm, -z_fm, x_roms[:,-2:], y_roms[:,-2:], h_roms, 'E', erot)
-        TEMP_int2d[:,:,-2:] = a        
-        np.save('TEMP_int2d.npy', TEMP_int2d); del TEMP_int2d           
-           
-        
-        SALT_int2d = np.zeros([salt_fm.shape[0], x_roms.shape[0], x_roms.shape[1]])
-        a = horiz_interp_3dvar_cut(salt_fm, x_fm, y_fm, -z_fm, x_roms[-2:,:], y_roms[-2:,:], h_roms, 'N', nrot)
-        SALT_int2d[:,-2:,:] = a
-        a = horiz_interp_3dvar_cut(salt_fm, x_fm, y_fm, -z_fm, x_roms[0:2,:], y_roms[0:2,:], h_roms, 'S', srot)
-        SALT_int2d[:,0:2,:] = a
-        a = horiz_interp_3dvar_cut(salt_fm, x_fm, y_fm, -z_fm, x_roms[:,0:2], y_roms[:,0:2], h_roms, 'W', wrot)
-        SALT_int2d[:,:,0:2] = a
-        a = horiz_interp_3dvar_cut(salt_fm, x_fm, y_fm, -z_fm, x_roms[:,-2:], y_roms[:,-2:], h_roms, 'E', erot)
-        SALT_int2d[:,:,-2:] = a        
-        np.save('SALT_int2d.npy', SALT_int2d); del SALT_int2d        
-        
+        TEMP_int2d = horiz_interp_3dvar(temp_fm, x_fm, y_fm, -z_fm, x_roms, y_roms, h_roms)
+        np.save('TEMP_int2d.npy', TEMP_int2d.filled()); del TEMP_int2d
+
+        SALT_int2d = horiz_interp_3dvar(salt_fm, x_fm, y_fm, -z_fm, x_roms, y_roms, h_roms)
+        np.save('SALT_int2d.npy', SALT_int2d.filled()); del SALT_int2d
         #exit()
 
     print ('passou oii')
@@ -261,28 +217,28 @@ for i in range(len(frevec)):
         z_parent = np.expand_dims(z_fm,1)
         z_parent = np.expand_dims(z_parent,1)
         z_parent = np.tile(z_parent, (1,etamax,ximax))
-        # U_int3d, V_int3d, TEMP_int3d, SALT_int3d = vert_interp_3dvar_cut_simultaneous(U_int2d, V_int2d, TEMP_int2d, SALT_int2d, z_parent, zr) 
+        # U_int3d, V_int3d, TEMP_int3d, SALT_int3d = vert_interp_3dvar_simultaneous(U_int2d, V_int2d, TEMP_int2d, SALT_int2d, z_parent, zr) 
         
         U_int2d = np.load('U_int2d.npy')
-        U_int3d = vert_interp_3dvar_cut(U_int2d, z_parent, zr)
+        U_int3d = vert_interp_3dvar(U_int2d, z_parent, zr)
         np.savez('int3d_u.npz', U_int3d=U_int3d)
         # exit()
         del U_int2d, U_int3d
 
         V_int2d = np.load('V_int2d.npy')
-        V_int3d = vert_interp_3dvar_cut(V_int2d, z_parent, zr)
+        V_int3d = vert_interp_3dvar(V_int2d, z_parent, zr)
         np.savez('int3d_v.npz', V_int3d=V_int3d)
         # exit()
         del V_int2d, V_int3d
 
         TEMP_int2d = np.load('TEMP_int2d.npy')
-        TEMP_int3d = vert_interp_3dvar_cut(TEMP_int2d, z_parent, zr)
+        TEMP_int3d = vert_interp_3dvar(TEMP_int2d, z_parent, zr)
         np.savez('int3d_t.npz', TEMP_int3d=TEMP_int3d)
         # exit()
         del TEMP_int2d, TEMP_int3d
 
         SALT_int2d = np.load('SALT_int2d.npy')
-        SALT_int3d = vert_interp_3dvar_cut(SALT_int2d, z_parent, zr)
+        SALT_int3d = vert_interp_3dvar(SALT_int2d, z_parent, zr)
         np.savez('int3d_s.npz', SALT_int3d=SALT_int3d)
         # exit()
         del SALT_int2d, SALT_int3d
@@ -306,7 +262,7 @@ for i in range(len(frevec)):
   
     u_int3d[rt-frevec2[i],:,:,:]=cosa*a + sina*b
   
-    v_int3d[rt-frevec2[i],:,:,:]=cosa*b - sina*a 
+    v_int3d[rt-frevec2[i],:,:,:]=cosa*b - sina*a
   
   
   
@@ -321,6 +277,7 @@ for i in range(len(frevec)):
 
   print ('checar')
 
+
 #https://earthscience.stackexchange.com/questions/13167/barotropic-component-definition
 
   ubar_int3d_1=np.zeros((n_time,)  + (x_roms.shape[0],) + (x_roms.shape[1],))
@@ -328,7 +285,7 @@ for i in range(len(frevec)):
   vbar_int3d_1=np.zeros((n_time,)  + (x_roms.shape[0],) + (x_roms.shape[1],))
 
   dzr=abs(np.diff(zr, axis=0, append=0))
-
+  
   for rt in range(int(n_time)):
     ubar_int3d_1[rt,:,:] = np.sum(u_int3d[rt,:,:,:]*dzr, axis=0) / abs(zr[0,::])
     vbar_int3d_1[rt,:,:] = np.sum(v_int3d[rt,:,:,:]*dzr, axis=0) / abs(zr[0,::])
@@ -349,7 +306,7 @@ for i in range(len(frevec)):
   temp_int3d,salt_int3d,zeta,u_int3d,v_int3d = map(np.ma.masked_invalid, (temp_int3d,salt_int3d,zeta,u_int3d,v_int3d))
 
 ## Vertically-averaged velocities.
-#for rt in range(int(numdays[0])):
+#for rt in range(int(numdays)):
 #  ubar_int3d[rt,:,:] = u_int3d[rt,:,:,:].mean(axis=0)
 #  vbar_int3d[rt,:,:] = v_int3d[rt,:,:,:].mean(axis=0)
   
@@ -395,32 +352,6 @@ for i in range(len(frevec)):
                 plt.close('all')
 
   plt.close('all')
-  if False:
-        vvals = np.arange(-1., 1., .025)
-        for ieta in xrange(0,etamax-1+5,5):
-                ietap = ieta + 1
-                print ("Plotting line %s of %s"%(ietap,etamax))
-                fig, ax = plt.subplots()
-                try:
-                        fmsk = msk_romsv[ieta,:]==1.
-                except IndexError:
-                        ieta = etamax - 2
-                        fmsk = msk_romsv[ieta,:]==1.
-                vm = np.abs(v_int3d[0,:,ieta,fmsk]).max()
-                ax.contourf(np.tile(dstsec[:,fmsk], (klevels,1)), zr[:,ieta,fmsk], v_int3d[0,:,ieta,fmsk].T, 500, vmin=-vm, vmax=vm, cmap=plt.cm.hsv)
-                cc = ax.contour(np.tile(dstsec[:,fmsk], (klevels,1)), zr[:,ieta,fmsk], v_int3d[0,:,ieta,fmsk].T, vvals, colors='k')
-                try:
-                        ax.clabel(cc, manual=False, fmt='%.2f', color='k')
-                except:
-                        pass
-                fmt = 'png'
-                if 'sm_' in fname_grd:
-                        figname = 'vvel_sec_after_interp2roms_smoo/' + str(ietap) + '.' + fmt
-                elif 're_' in fname_grd:
-                        figname = 'vvel_sec_after_interp2roms_real/' + str(ietap) + '.' + fmt
-
-#                plt.savefig(figname, format=fmt, bbox_inches='tight', pad_inches=0.1, dpi=100)
-                plt.close('all')
 
 ##------------------------------------
 ## Saving *_ini.nc and *_bry.nc files.
@@ -435,22 +366,25 @@ for i in range(len(frevec)):
 
   plt.close('all')
 # Saving initial conditions file.
-  if SAVE_INI_BRY_FILES:     
-        ##########################################################
-        ### - Write boundary conditions netcdf file (*_bry.nc). ###
-        ##########################################################
-        print ("")
-        print ("Writing boundary conditions file.")
-        
+  if SAVE_INI_BRY_FILES:
+
         ## Renaming variables before saving.
         temp, salt, u, v, ubar, vbar = temp_int3d, salt_int3d, u_int3d, v_int3d, ubar_int3d, vbar_int3d
+#        u=u*0
+#        v=v*0
+#        ubar=ubar*0
+#        vbar=vbar*0
+#        zeta=zeta*0
 
         if Spherical:
             spherical = 'T'
         else:
             spherical = 'F'
 
-        filenamestr = '_bry.nc'
+        ##########################################################
+        ### - Write initial conditions netcdf file (*_ini.nc). ###
+        ##########################################################
+        filenamestr = '_clm.nc'
         filetypestr = 'ROMS boundary conditions file'
 
         #########################################
@@ -458,59 +392,9 @@ for i in range(len(frevec)):
         print ("Writing boundary conditions file.")
 
         ##---- Slicing the 2D fields.
-        zeta_south = zeta[:,0,:]
-        zeta_east = zeta[:,:,-1]
-        zeta_north = zeta[:,-1,:]
-        zeta_west = zeta[:,:,0]
-
-        ubar_south = ubar[:,0,:]
-        ubar_east = ubar[:,:,-1]
-        ubar_north = ubar[:,-1,:]
-        ubar_west = ubar[:,:,0]
-        
-
-        vbar_south = vbar[:,0,:]
-        vbar_east = vbar[:,:,-1]
-        vbar_north = vbar[:,-1,:]
-        vbar_west = vbar[:,:,0]
-        
-
-        ##---- Slicing the 3D fields.
-        u_south = u[:,:,0,:]
-        u_east = u[:,:,:,-1]
-        u_north = u[:,:,-1,:]
-        u_west = u[:,:,:,0]
-        
-
-        v_south = v[:,:,0,:]
-        v_east = v[:,:,:,-1]
-        v_north = v[:,:,-1,:]
-        v_west = v[:,:,:,0]
-        
-
-        temp_south = temp[:,:,0,:]
-        temp_east = temp[:,:,:,-1]
-        temp_north = temp[:,:,-1,:]
-        temp_west = temp[:,:,:,0]
-        
-
-        salt_south = salt[:,:,0,:]
-        salt_east = salt[:,:,:,-1]
-        salt_north = salt[:,:,-1,:]
-        salt_west = salt[:,:,:,0]
-
-
-        dye_south = dye[:,:,0,:]
-        dye_east = dye[:,:,:,-1]
-        dye_north = dye[:,:,-1,:]
-        dye_west = dye[:,:,:,0]
         
         now = dt.now()
-        
-        outfile = output_path+run_name+'_'+str(25+i) + filenamestr
-
-#        outfile = output_path+run_name+'_'+'2013_12_30'+ filenamestr
-        
+        outfile = output_path+run_name+'_'+str(14+i) + filenamestr
         ncfile = Dataset(outfile, mode='w', clobber='true', format='NETCDF3_CLASSIC')
         # creating DIMENSIONS.        
 
@@ -532,7 +416,6 @@ for i in range(len(frevec)):
 
         # creating GLOBAL ATTRIBUTES
         setattr(ncfile, 'type', filetypestr)
-        setattr(ncfile, 'title', synopsis)
         setattr(ncfile, 'out_file', outfile)
         setattr(ncfile, 'grd_file', fname_grd)
         setattr(ncfile, 'history', str(now))
@@ -541,11 +424,11 @@ for i in range(len(frevec)):
         ## creating VARIABLES, ATTRIBUTES and ASSIGNING VALUES
         #############################################################################
         ## ---------------------------------------------------------------------------
-        ncfile.createVariable('spherical', 'i')
+        ncfile.createVariable('spherical', 'c')
         setattr(ncfile.variables['spherical'], 'long_name', 'Grid type logical switch')
-        setattr(ncfile.variables['spherical'], 'flag_values', [0,1])
-        setattr(ncfile.variables['spherical'], 'flag_meanings', 'Cartesian spherical')
-        ncfile.variables['spherical'][:]  = int(Spherical)
+        setattr(ncfile.variables['spherical'], 'option_T', 'spherical')
+        setattr(ncfile.variables['spherical'], 'option_F', 'cartesian')
+        ncfile.variables['spherical'][:] = spherical
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('Vtransform', 'i', dimensions=('one'))
@@ -587,7 +470,7 @@ for i in range(len(frevec)):
         setattr(ncfile.variables['s_rho'], 'positive', 'up')
         setattr(ncfile.variables['s_rho'], 'standard_name', 'ocean_s_coordinate_g1')
         setattr(ncfile.variables['s_rho'], 'formula_terms', 's: s_rho C: Cs_r eta: zeta depth: h depth_c: hc')
-        ncfile.variables['s_rho'][:]  = scoord.s_rho
+        ncfile.variables['s_rho'][:] = scoord.s_rho
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('s_w', 'd', dimensions=('s_w'))
@@ -597,70 +480,70 @@ for i in range(len(frevec)):
         setattr(ncfile.variables['s_w'], 'positive', 'up')
         setattr(ncfile.variables['s_w'], 'standard_name', 'ocean_s_coordinate_g1')
         setattr(ncfile.variables['s_w'], 'formula_terms', 's: s_rho C: Cs_w eta: zeta depth: h depth_c: hc')
-        ncfile.variables['s_w'][:]  = scoord.s_w
+        ncfile.variables['s_w'][:] = scoord.s_w
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('Cs_r', 'd', dimensions=('s_rho'))
         setattr(ncfile.variables['Cs_r'], 'long_name', 'S-coordinate stretching curve at RHO-points')
         setattr(ncfile.variables['Cs_r'], 'valid_min', -1.)
         setattr(ncfile.variables['Cs_r'], 'valid_max', 0.)
-        ncfile.variables['Cs_r'][:]  = scoord.Cs_r
+        ncfile.variables['Cs_r'][:] = scoord.Cs_r
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('Cs_w', 'd', dimensions=('s_w'))
         setattr(ncfile.variables['Cs_w'], 'long_name', 'S-coordinate stretching curve at W-points')
         setattr(ncfile.variables['Cs_w'], 'valid_min', -1.)
         setattr(ncfile.variables['Cs_w'], 'valid_max', 0.)
-        ncfile.variables['Cs_w'][:]  = scoord.Cs_w
+        ncfile.variables['Cs_w'][:] = scoord.Cs_w
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('h', 'd', dimensions=('eta_rho', 'xi_rho'))
         setattr(ncfile.variables['h'], 'long_name', 'Final bathymetry at RHO-points')
         setattr(ncfile.variables['h'], 'units', 'm')
         setattr(ncfile.variables['h'], 'coordinates', 'lon_rho lat_rho')
-        ncfile.variables['h'][:]  = h_roms
+        ncfile.variables['h'][:] = h_roms
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lon_rho', 'd', dimensions=('eta_rho', 'xi_rho'))
         setattr(ncfile.variables['lon_rho'], 'long_name', 'Longitude of RHO-points')
         setattr(ncfile.variables['lon_rho'], 'units', 'Degrees_east')
         setattr(ncfile.variables['lon_rho'], 'standard_name', 'longitude')
-        ncfile.variables['lon_rho'][:]  = grd.variables['lon_rho'][:]
+        ncfile.variables['lon_rho'][:] = grd.variables['lon_rho'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lat_rho', 'd', dimensions=('eta_rho', 'xi_rho'))
         setattr(ncfile.variables['lat_rho'], 'long_name', 'Latitude of RHO-points')
         setattr(ncfile.variables['lat_rho'], 'units', 'Degrees_north')
         setattr(ncfile.variables['lat_rho'], 'standard_name', 'latitude')
-        ncfile.variables['lat_rho'][:]  = grd.variables['lat_rho'][:]
+        ncfile.variables['lat_rho'][:] = grd.variables['lat_rho'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lon_u', 'd', dimensions=('eta_u', 'xi_u'))
         setattr(ncfile.variables['lon_u'], 'long_name', 'Longitude of U-points')
         setattr(ncfile.variables['lon_u'], 'units', 'Degrees_east')
         setattr(ncfile.variables['lon_u'], 'standard_name', 'longitude')
-        ncfile.variables['lon_u'][:]  = grd.variables['lon_u'][:]
+        ncfile.variables['lon_u'][:] = grd.variables['lon_u'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lat_u', 'd', dimensions=('eta_u', 'xi_u'))
         setattr(ncfile.variables['lat_u'], 'long_name', 'Latitude of U-points')
         setattr(ncfile.variables['lat_u'], 'units', 'Degrees_north')
         setattr(ncfile.variables['lat_u'], 'standard_name', 'latitude')
-        ncfile.variables['lat_u'][:]  = grd.variables['lat_u'][:]
+        ncfile.variables['lat_u'][:] = grd.variables['lat_u'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lon_v', 'd', dimensions=('eta_v', 'xi_v'))
         setattr(ncfile.variables['lon_v'], 'long_name', 'Longitude of V-points')
         setattr(ncfile.variables['lon_v'], 'units', 'Degrees_east')
         setattr(ncfile.variables['lon_v'], 'standard_name', 'longitude')
-        ncfile.variables['lon_v'][:]  = grd.variables['lon_v'][:]
+        ncfile.variables['lon_v'][:] = grd.variables['lon_v'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('lat_v', 'd', dimensions=('eta_v', 'xi_v'))
         setattr(ncfile.variables['lat_v'], 'long_name', 'Latitude of V-points')
         setattr(ncfile.variables['lat_v'], 'units', 'Degrees_north')
         setattr(ncfile.variables['lat_v'], 'standard_name', 'latitude')
-        ncfile.variables['lat_v'][:]  = grd.variables['lat_v'][:]
+        ncfile.variables['lat_v'][:] = grd.variables['lat_v'][:]
 
         ## ---------------------------------------------------------------------------
         ncfile.createVariable('zeta_time', 'd', dimensions=('zeta_time'))
@@ -704,232 +587,70 @@ for i in range(len(frevec)):
         ncfile.variables['v3d_time'][:] = bry_time
 
         ## ---------------------------------------------------------------------------
-        ncfile.createVariable('zeta_south', 'd', dimensions=('zeta_time', 'xi_rho'))
-        setattr(ncfile.variables['zeta_south'], 'long_name', 'Free-surface southern boundary condition')
-        setattr(ncfile.variables['zeta_south'], 'units', 'm')
-        setattr(ncfile.variables['zeta_south'], 'time', 'zeta_time')
-        ncfile.variables['zeta_south'][:] = zeta_south
+        ncfile.createVariable('zeta', 'd', dimensions=('zeta_time', 'eta_rho', 'xi_rho'))
+        setattr(ncfile.variables['zeta'], 'long_name', 'Free-surface southern boundary condition')
+        setattr(ncfile.variables['zeta'], 'units', 'm')
+        setattr(ncfile.variables['zeta'], 'time', 'zeta_time')
+        ncfile.variables['zeta'][:] = zeta
+
 
         ## ---------------------------------------------------------------------------
-        ncfile.createVariable('zeta_east', 'd', dimensions=('zeta_time', 'eta_rho'))
-        setattr(ncfile.variables['zeta_east'], 'long_name', 'Free-surface eastern boundary condition')
-        setattr(ncfile.variables['zeta_east'], 'units', 'm')
-        setattr(ncfile.variables['zeta_south'], 'time', 'zeta_time')
-        ncfile.variables['zeta_east'][:] = zeta_east
+        ncfile.createVariable('ubar', 'd', dimensions=('v2d_time', 'eta_u', 'xi_u'))
+        setattr(ncfile.variables['ubar'], 'long_name', '2D u-momentum southern boundary condition')
+        setattr(ncfile.variables['ubar'], 'units', 'meter second-1')
+        setattr(ncfile.variables['zeta'], 'time', 'v2d_time')
+        ncfile.variables['ubar'][:] = ubar
+
 
         ## ---------------------------------------------------------------------------
-        ncfile.createVariable('zeta_west', 'd', dimensions=('zeta_time', 'eta_rho'))
-        setattr(ncfile.variables['zeta_west'], 'long_name', 'Free-surface eastern boundary condition')
-        setattr(ncfile.variables['zeta_west'], 'units', 'm')
-        setattr(ncfile.variables['zeta_west'], 'time', 'zeta_time')
-        ncfile.variables['zeta_west'][:] = zeta_west
+        ncfile.createVariable('vbar', 'd', dimensions=('v2d_time','eta_v', 'xi_v'))
+        setattr(ncfile.variables['vbar'], 'long_name', '2D v-momentum southern boundary condition')
+        setattr(ncfile.variables['vbar'], 'units', 'meter second-1')
+        setattr(ncfile.variables['zeta'], 'time', 'v2d_time')
+        ncfile.variables['vbar'][:] = vbar
+
 
         ## ---------------------------------------------------------------------------
-        ncfile.createVariable('zeta_north', 'd', dimensions=('zeta_time', 'xi_rho'))
-        setattr(ncfile.variables['zeta_north'], 'long_name', 'Free-surface northern boundary condition')
-        setattr(ncfile.variables['zeta_north'], 'units', 'm')
-        setattr(ncfile.variables['zeta_south'], 'time', 'zeta_time')
-        ncfile.variables['zeta_north'][:] = zeta_north
+        ncfile.createVariable('temp', 'd', dimensions=('temp_time', 's_rho', 'eta_rho', 'xi_rho'))
+        setattr(ncfile.variables['temp'], 'long_name', 'Potential temperature southern boundary condition')
+        setattr(ncfile.variables['temp'], 'units', 'Degrees Celsius')
+        setattr(ncfile.variables['temp'], 'time', 'temp_time')
+        ncfile.variables['temp'][:] = temp
 
         ## ---------------------------------------------------------------------------
-        ncfile.createVariable('ubar_south', 'd', dimensions=('v2d_time', 'xi_u'))
-        setattr(ncfile.variables['ubar_south'], 'long_name', '2D u-momentum southern boundary condition')
-        setattr(ncfile.variables['ubar_south'], 'units', 'meter second-1')
-        setattr(ncfile.variables['zeta_south'], 'time', 'v2d_time')
-        ncfile.variables['ubar_south'][:] = ubar_south
+
+        ncfile.createVariable('dye', 'd', dimensions=('dye_time', 's_rho', 'eta_rho', 'xi_rho'))
+        setattr(ncfile.variables['dye'], 'long_name', 'Dye_01 southern boundary condition')
+        setattr(ncfile.variables['dye'], 'units', 'kilogram meter-3')
+        setattr(ncfile.variables['dye'], 'time', 'dye_time')
+        ncfile.variables['dye'][:]  = dye
 
         ## ---------------------------------------------------------------------------
-        ncfile.createVariable('ubar_east', 'd', dimensions=('v2d_time', 'eta_u'))
-        setattr(ncfile.variables['ubar_east'], 'long_name', '2D u-momentum eastern boundary condition')
-        setattr(ncfile.variables['ubar_east'], 'units', 'meter second-1')
-        setattr(ncfile.variables['zeta_south'], 'time', 'v2d_time')
-        ncfile.variables['ubar_east'][:] = ubar_east
-        
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('ubar_west', 'd', dimensions=('v2d_time', 'eta_u'))
-        setattr(ncfile.variables['ubar_west'], 'long_name', '2D u-momentum eastern boundary condition')
-        setattr(ncfile.variables['ubar_west'], 'units', 'meter second-1')
-        setattr(ncfile.variables['zeta_west'], 'time', 'v2d_time')
-        ncfile.variables['ubar_west'][:] = ubar_west
+        ncfile.createVariable('salt', 'd', dimensions=('salt_time', 's_rho', 'eta_rho', 'xi_rho'))
+        setattr(ncfile.variables['salt'], 'long_name', 'Practical salinity southern boundary condition')
+        setattr(ncfile.variables['salt'], 'units', 'Practical salinity units, psu (PSS-78)')
+        setattr(ncfile.variables['salt'], 'time', 'salt_time')
+        ncfile.variables['salt'][:] = salt
 
         ## ---------------------------------------------------------------------------
-        ncfile.createVariable('ubar_north', 'd', dimensions=('v2d_time', 'xi_u'))
-        setattr(ncfile.variables['ubar_north'], 'long_name', '2D u-momentum northern boundary condition')
-        setattr(ncfile.variables['ubar_north'], 'units', 'meter second-1')
-        setattr(ncfile.variables['zeta_south'], 'time', 'v2d_time')
-        ncfile.variables['ubar_north'][:] = ubar_north
+        ncfile.createVariable('u', 'd', dimensions=('v3d_time', 's_rho', 'eta_u', 'xi_u'))
+        setattr(ncfile.variables['u'], 'long_name', '3D u-momentum southern boundary condition')
+        setattr(ncfile.variables['u'], 'units', 'meter second-1')
+        setattr(ncfile.variables['u'], 'time', 'v3d_time')
+        ncfile.variables['u'][:] = u
+
 
         ## ---------------------------------------------------------------------------
-        ncfile.createVariable('vbar_south', 'd', dimensions=('v2d_time', 'xi_v'))
-        setattr(ncfile.variables['vbar_south'], 'long_name', '2D v-momentum southern boundary condition')
-        setattr(ncfile.variables['vbar_south'], 'units', 'meter second-1')
-        setattr(ncfile.variables['zeta_south'], 'time', 'v2d_time')
-        ncfile.variables['vbar_south'][:] = vbar_south
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('vbar_east', 'd', dimensions=('v2d_time', 'eta_v'))
-        setattr(ncfile.variables['vbar_east'], 'long_name', '2D v-momentum eastern boundary condition')
-        setattr(ncfile.variables['vbar_east'], 'units', 'meter second-1')
-        setattr(ncfile.variables['zeta_south'], 'time', 'v2d_time')
-        ncfile.variables['vbar_east'][:] = vbar_east
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('vbar_west', 'd', dimensions=('v2d_time', 'eta_v'))
-        setattr(ncfile.variables['vbar_west'], 'long_name', '2D v-momentum eastern boundary condition')
-        setattr(ncfile.variables['vbar_west'], 'units', 'meter second-1')
-        setattr(ncfile.variables['zeta_west'], 'time', 'v2d_time')
-        ncfile.variables['vbar_west'][:] = vbar_west
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('vbar_north', 'd', dimensions=('v2d_time', 'xi_v'))
-        setattr(ncfile.variables['vbar_north'], 'long_name', '2D v-momentum northern boundary condition')
-        setattr(ncfile.variables['vbar_north'], 'units', 'meter second-1')
-        setattr(ncfile.variables['zeta_south'], 'time', 'v2d_time')
-        ncfile.variables['vbar_north'][:] = vbar_north
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('temp_south', 'd', dimensions=('temp_time', 's_rho', 'xi_rho'))
-        setattr(ncfile.variables['temp_south'], 'long_name', 'Potential temperature southern boundary condition')
-        setattr(ncfile.variables['temp_south'], 'units', 'Degrees Celsius')
-        setattr(ncfile.variables['temp_south'], 'time', 'temp_time')
-        ncfile.variables['temp_south'][:] = temp_south
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('temp_east', 'd', dimensions=('temp_time', 's_rho', 'eta_rho'))
-        setattr(ncfile.variables['temp_east'], 'long_name', 'Potential temperature eastern boundary condition')
-        setattr(ncfile.variables['temp_east'], 'units', 'Degrees Celsius')
-        setattr(ncfile.variables['temp_east'], 'time', 'temp_time')
-        ncfile.variables['temp_east'][:] = temp_east
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('temp_west', 'd', dimensions=('temp_time', 's_rho', 'eta_rho'))
-        setattr(ncfile.variables['temp_west'], 'long_name', 'Potential temperature eastern boundary condition')
-        setattr(ncfile.variables['temp_west'], 'units', 'Degrees Celsius')
-        setattr(ncfile.variables['temp_west'], 'time', 'temp_time')
-        ncfile.variables['temp_west'][:] = temp_west
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('temp_north', 'd', dimensions=('temp_time', 's_rho', 'xi_rho'))
-        setattr(ncfile.variables['temp_north'], 'long_name', 'Potential temperature northern boundary condition')
-        setattr(ncfile.variables['temp_north'], 'units', 'Degrees Celsius')
-        setattr(ncfile.variables['temp_north'], 'time', 'temp_time')
-        ncfile.variables['temp_north'][:] = temp_north
-
-        ncfile.createVariable('dye_south_01', 'd', dimensions=('dye_time', 's_rho', 'xi_rho'))
-        setattr(ncfile.variables['dye_south_01'], 'long_name', 'Dye_01 southern boundary condition')
-        setattr(ncfile.variables['dye_south_01'], 'units', 'kilogram meter-3')
-        setattr(ncfile.variables['dye_south_01'], 'time', 'dye_time')
-        ncfile.variables['dye_south_01'][:]  = dye_south
-
-        ncfile.createVariable('dye_east_01', 'd', dimensions=('dye_time', 's_rho', 'eta_rho'))
-        setattr(ncfile.variables['dye_east_01'], 'long_name', 'Dye_01 eastern boundary condition')
-        setattr(ncfile.variables['dye_east_01'], 'units', 'kilogram meter-3')
-        setattr(ncfile.variables['dye_east_01'], 'time', 'dye_time')
-        ncfile.variables['dye_east_01'][:]  = dye_east
-
-        ncfile.createVariable('dye_west_01', 'd', dimensions=('dye_time', 's_rho', 'eta_rho'))
-        setattr(ncfile.variables['dye_west_01'], 'long_name', 'Dye_01 eastern boundary condition')
-        setattr(ncfile.variables['dye_west_01'], 'units', 'kilogram meter-3')
-        setattr(ncfile.variables['dye_west_01'], 'time', 'dye_time')
-        ncfile.variables['dye_west_01'][:]  = dye_west
-
-        ncfile.createVariable('dye_north_01', 'd', dimensions=('dye_time', 's_rho', 'xi_rho'))
-        setattr(ncfile.variables['dye_north_01'], 'long_name', 'Dye_01 northern boundary condition')
-        setattr(ncfile.variables['dye_north_01'], 'units', 'kilogram meter-3')
-        setattr(ncfile.variables['dye_north_01'], 'time', 'dye_time')
-        ncfile.variables['dye_north_01'][:]  = dye_north
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('salt_south', 'd', dimensions=('salt_time', 's_rho', 'xi_rho'))
-        setattr(ncfile.variables['salt_south'], 'long_name', 'Practical salinity southern boundary condition')
-        setattr(ncfile.variables['salt_south'], 'units', 'Practical salinity units, psu (PSS-78)')
-        setattr(ncfile.variables['salt_south'], 'time', 'salt_time')
-        ncfile.variables['salt_south'][:] = salt_south
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('salt_east', 'd', dimensions=('salt_time', 's_rho', 'eta_rho'))
-        setattr(ncfile.variables['salt_east'], 'long_name', 'Practical salinity eastern boundary condition')
-        setattr(ncfile.variables['salt_east'], 'units', 'Practical salinity units, psu (PSS-78)')
-        setattr(ncfile.variables['salt_east'], 'time', 'salt_time')
-        ncfile.variables['salt_east'][:] = salt_east
-        
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('salt_west', 'd', dimensions=('salt_time', 's_rho', 'eta_rho'))
-        setattr(ncfile.variables['salt_west'], 'long_name', 'Practical salinity eastern boundary condition')
-        setattr(ncfile.variables['salt_west'], 'units', 'Practical salinity units, psu (PSS-78)')
-        setattr(ncfile.variables['salt_west'], 'time', 'salt_time')
-        ncfile.variables['salt_west'][:] = salt_west
-        
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('salt_north', 'd', dimensions=('salt_time', 's_rho', 'xi_rho'))
-        setattr(ncfile.variables['salt_north'], 'long_name', 'Practical salinity northern boundary condition')
-        setattr(ncfile.variables['salt_north'], 'units', 'Practical salinity units, psu (PSS-78)')
-        setattr(ncfile.variables['salt_north'], 'time', 'salt_time')
-        ncfile.variables['salt_north'][:] = salt_north
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('u_south', 'd', dimensions=('v3d_time', 's_rho', 'xi_u'))
-        setattr(ncfile.variables['u_south'], 'long_name', '3D u-momentum southern boundary condition')
-        setattr(ncfile.variables['u_south'], 'units', 'meter second-1')
-        setattr(ncfile.variables['u_south'], 'time', 'v3d_time')
-        ncfile.variables['u_south'][:] = u_south
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('u_east', 'd', dimensions=('v3d_time', 's_rho', 'eta_u'))
-        setattr(ncfile.variables['u_east'], 'long_name', '3D u-momentum eastern boundary condition')
-        setattr(ncfile.variables['u_east'], 'units', 'meter second-1')
-        setattr(ncfile.variables['u_east'], 'time', 'v3d_time')
-        ncfile.variables['u_east'][:] = u_east
-        
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('u_west', 'd', dimensions=('v3d_time', 's_rho', 'eta_u'))
-        setattr(ncfile.variables['u_west'], 'long_name', '3D u-momentum eastern boundary condition')
-        setattr(ncfile.variables['u_west'], 'units', 'meter second-1')
-        setattr(ncfile.variables['u_west'], 'time', 'v3d_time')
-        ncfile.variables['u_west'][:] = u_west
-        
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('u_north', 'd', dimensions=('v3d_time', 's_rho', 'xi_u'))
-        setattr(ncfile.variables['u_north'], 'long_name', '3D u-momentum northern boundary condition')
-        setattr(ncfile.variables['u_north'], 'units', 'meter second-1')
-        setattr(ncfile.variables['u_north'], 'time', 'v3d_time')
-        ncfile.variables['u_north'][:] = u_north
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('v_south', 'd', dimensions=('v3d_time', 's_rho', 'xi_v'))
-        setattr(ncfile.variables['v_south'], 'long_name', '3D v-momentum southern boundary condition')
-        setattr(ncfile.variables['v_south'], 'units', 'meter second-1')
-        setattr(ncfile.variables['v_south'], 'time', 'v3d_time')
-        ncfile.variables['v_south'][:] = v_south
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('v_east', 'd', dimensions=('v3d_time', 's_rho', 'eta_v'))
-        setattr(ncfile.variables['v_east'], 'long_name', '3D v-momentum eastern boundary condition')
-        setattr(ncfile.variables['v_east'], 'units', 'meter second-1')
-        setattr(ncfile.variables['v_east'], 'time', 'v3d_time')
-        ncfile.variables['v_east'][:] = v_east
-        
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('v_west', 'd', dimensions=('v3d_time', 's_rho', 'eta_v'))
-        setattr(ncfile.variables['v_west'], 'long_name', '3D v-momentum eastern boundary condition')
-        setattr(ncfile.variables['v_west'], 'units', 'meter second-1')
-        setattr(ncfile.variables['v_west'], 'time', 'v3d_time')
-        ncfile.variables['v_west'][:] = v_west
-        
-
-        ## ---------------------------------------------------------------------------
-        ncfile.createVariable('v_north', 'd', dimensions=('v3d_time', 's_rho', 'xi_v'))
-        setattr(ncfile.variables['v_north'], 'long_name', '3D v-momentum northern boundary condition')
-        setattr(ncfile.variables['v_north'], 'units', 'meter second-1')
-        setattr(ncfile.variables['v_north'], 'time', 'v3d_time')
-        ncfile.variables['v_north'][:] = v_north
+        ncfile.createVariable('v', 'd', dimensions=('v3d_time', 's_rho','eta_v', 'xi_v'))
+        setattr(ncfile.variables['v'], 'long_name', '3D v-momentum southern boundary condition')
+        setattr(ncfile.variables['v'], 'units', 'meter second-1')
+        setattr(ncfile.variables['v'], 'time', 'v3d_time')
+        ncfile.variables['v'][:] = v
 
         #############################################################################
         ncfile.sync()
         ncfile.close()
         print ("Done.")
         print ("")
-        
+
 grd.close()

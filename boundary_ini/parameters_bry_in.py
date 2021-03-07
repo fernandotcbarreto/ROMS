@@ -2,17 +2,19 @@
 #number of columns/lines to trim the input file in the interpolation.
 #Example: if lim = 2, the code will employ 4 gridlines for each interpolation.
       
-lim=2
+lim=5
 
-step=9   #days interval, default is 1
+step=5   #days interval, default is 1
+
+freq=33
 ######################################################################################
 
 noextra=True            # in vertical 1D interpolation uses the nearest value in extrapolation
                         # if False continues with the linear interpolation
 
-timeini = '2014-11-01 00:00:00'
+timeini = '2013-12-30 00:00:00'
 
-timeend = '2014-11-03 00:00:00'
+timeend = '2013-12-30 00:00:00'
 
 timeref = '2013-01-01 00:00:00'                   # Reference time at bry file. Azul project is seconds since 2013-01-01 00:00:00]
 
@@ -24,8 +26,9 @@ timeref = '2013-01-01 00:00:00'                   # Reference time at bry file. 
 
 input_path='R:/Modelos/CMEMS_BEST_ANALYSIS/CMEMS_BEST_ANALYSIS_'
 
+output_path='R:/Modelos/BRSE_2014_2016/INI_BRY_CLM/BRY/'
 
-run_name = '20200626'      # name for bry and ini files
+run_name = 'BRSE_2013_12_30'      # name for bry and ini files
 
 fname_grd = 'BRSE_2012_GRD.nc'                       # ROMS grid   
 
@@ -35,10 +38,10 @@ fname_grd = 'BRSE_2012_GRD.nc'                       # ROMS grid
 ## Stretching curve parameters.
 theta_b = 0.4
 theta_s = 5.0
-tcline = 100.
-klevels = 40
-Vtransform = 2
-Vstretching = 4
+tcline = 3.
+klevels = 30
+Vtransform = 1
+Vstretching = 1
 
 
 Spherical = True
@@ -47,9 +50,9 @@ Spherical = True
 
 yearclm=2016
 
-monthiclm=4                        #initial month
+monthiclm=5                        #initial month
 
-monthfclm=5                        #final month
+monthfclm=7                        #final month
 
 monthly=False
 ##################### parameters
