@@ -10,7 +10,9 @@ from matplotlib.pylab import *
 from matplotlib import dates
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-avgfile=Dataset('BRSE_fwd_outer1.nc')
+#avgfile=Dataset('HIS_FILE_20201109_5D0-20201118_5D0_hind.nc')
+avgfile=Dataset('his_no_ass.nc')
+#avgfile=Dataset('BRSE_fwd_outer1.nc')
 #avgfile2=Dataset('HIS_FILE_20200421_5D0-20200428_5D0_hind_correct_year_WEAK_menor_azul_nopline_0010.nc')
 
 fname_grd = 'azul_grd2.nc'  ## Smooth topography grid.   
@@ -210,9 +212,9 @@ tempinterpmur=np.ma.masked_where(tempinterpmur>100, tempinterpmur)
 
 #tempinterpmur=np.ma.masked_where(np.repeat(msk_roms[np.newaxis,:],len(timemur),axis=0)==0, tempinterpmur)
 
-#tempnewtimeNa = tempnewtime.copy()
+tempnewtimeNa = tempnewtime.copy()
 
-tempdif=tempnewtime-tempinterpmur 
+#tempdif=tempnewtime-tempinterpmur 
 
 tempdifNA=tempnewtimeNa-tempinterpmur 
 
@@ -234,8 +236,8 @@ for j in range(intu.shape[1]):
   for k in range(intu.shape[2]):
     temprmsemur[j,k] = np.sqrt(mean_squared_error(tempinterpmur[:,j,k],tempnewtime[:,j,k]))
     tempmaemur[j,k] = mean_absolute_error(tempinterpmur[:,j,k],tempnewtime[:,j,k])
-    
-    
+
+
 temprmsemur = np.ma.masked_where(temprmsemur>1.5, temprmsemur)
 tempmaemur = np.ma.masked_where(tempmaemur>1.5, tempmaemur)
 
