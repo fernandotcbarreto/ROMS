@@ -197,7 +197,7 @@ sed -i "0,/NTIMES ==.*/{s/NTIMES ==.*/NTIMES == ${sizegrid[2]}/}" ${newini}
 
 sed -i "0,/NRST ==.*/{s/NRST ==.*/NRST == ${sizegrid[3]}/}" ${newini}
 
-sed -i "0,/NAVG ==.*/{s/NAVG ==.*/NAVG == 200/}" ${newini}   #no outputing avg
+sed -i "0,/NAVG ==.*/{s/NAVG ==.*/NAVG == 0/}" ${newini}   #no outputing avg
 
 sed -i "0,/DT ==.*/{s/DT ==.*/DT == ${DT}/}" ${newini}
 
@@ -561,7 +561,7 @@ sed -i "0,/NTIMES ==.*/{s/NTIMES ==.*/NTIMES == ${sizegrid[2]}/}" ${newini}
 #sed -i "0,/NRST ==.*/{s/NRST ==.*/NRST == ${sizegrid[3]}/}" ${newini}
 sed -i "0,/NRST ==.*/{s/NRST ==.*/NRST == 0/}" ${newini}
 
-sed -i "0,/NAVG ==.*/{s/NAVG ==.*/NAVG == 200/}" ${newini}   #no outputing avg
+sed -i "0,/NAVG ==.*/{s/NAVG ==.*/NAVG == 0/}" ${newini}   #no outputing avg
 
 sed -i "0,/DT ==.*/{s/DT ==.*/DT == ${DT}/}" ${newini}
 
