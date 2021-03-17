@@ -56,6 +56,7 @@ for i in range(len(coup_files)):
   sumtimes = int(Dataset(coup_files[i])['u_eastward'][:].shape[0]) + sumtimes
   
 print('processing coupling files ' + coup_files[0])
+ref_time = str(Dataset(coup_files[0])['ocean_time'].units)  
 
 file=Dataset(coup_files[0])
 x_fm=file['lon_rho'][:]
@@ -656,9 +657,9 @@ if SAVE_INI_BRY_FILES:
         # ---------------------------------------------------------------------------
         ncfile.createVariable('ocean_time', 'd', dimensions=('time'))
         setattr(ncfile.variables['ocean_time'], 'long_name', 'Time since model initialization')
-        setattr(ncfile.variables['ocean_time'], 'units', 's')
-        # setattr(ncfile.variables['ocean_time'], 'calendar', '360.0 days / year')
-        ncfile.variables['ocean_time'][:]  = np.array([t0])
+        setattr(ncfile.variables['ocean_time'], 'units', ref_time)
+        # setattr(ncfile.variables['ocean_time'], 'calendar', 'gregorian')
+        ncfile.variables['ocean_time'][:]  = np.array(bry_time[0])
 
         # ---------------------------------------------------------------------------
         ncfile.createVariable('zeta', 'd', dimensions=('time', 'eta_rho', 'xi_rho'))
