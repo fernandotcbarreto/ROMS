@@ -138,6 +138,24 @@ boundtime=`date --date "$inim days" +%Y%m%d`
 
 
 python myocean_2_roms_bry_cut.py
+
+
+TIME_REF=`date --date "$inig days" +%Y%m%d`.5D0   #begin at 12 PM
+
+INI_REFST=`date --date "$inig days" +%Y-%m-%d`
+ff=`echo $INI_REFST 12:00:00`
+
+nsegs=($(
+python - <<EOF
+from matplotlib import dates
+print((dates.datestr2num('$ff') - dates.datestr2num('1900-01-01'))*24*60*60)
+EOF
+))
+
+
+sed -i "0,/t0 =.*/{s@t0 =.*@t0 =$nsegs@}" myocean_2_roms_ini.py
+sed -i "0,/'units', 's')/{s@'units', 's')@'units', 'seconds since 1900-01-01 00:00:00')@}" myocean_2_roms_ini.py
+
 python myocean_2_roms_ini.py
 
 if [ $NUDGECLIM == TRUE ];then
@@ -203,8 +221,22 @@ sed -i "0,/DT ==.*/{s/DT ==.*/DT == ${DT}/}" ${newini}
 
 
 TIME_REF=`date --date "$inig days" +%Y%m%d`.5D0   #begin at 12 PM
- 
-sed -i "0,/TIME_REF =.*/{s/TIME_REF =.*/TIME_REF = $TIME_REF/}" ${newini}
+
+INI_REFST=`date --date "$inig days" +%Y-%m-%d`
+ff=`echo $INI_REFST 12:00:00`
+
+startd=($(
+python - <<EOF
+from matplotlib import dates
+print(dates.datestr2num('$ff') - dates.datestr2num('1900-01-01'))
+EOF
+))
+
+TIME_REFSTR=19000101.0D0   #begin at 12 PM
+
+sed -i "0,/DSTART =.*/{s/DSTART =.*/DSTART = $startd/}" ${newini}
+
+sed -i "0,/TIME_REF =.*/{s/TIME_REF =.*/TIME_REF = $TIME_REFSTR/}" ${newini}
 
 sed -i "0,/NHIS ==.*/{s/NHIS ==.*/NHIS == ${sizegrid[4]}/}" ${newini}   
 
@@ -289,15 +321,28 @@ sed -i "0,/NTIMES ==.*/{s/NTIMES ==.*/NTIMES == ${sizegrid[2]}/}" ${newini}
 
 sed -i "0,/NRST ==.*/{s/NRST ==.*/NRST == ${sizegrid[3]}/}" ${newini}
 
-sed -i "0,/NAVG ==.*/{s/NAVG ==.*/NAVG == 200/}" ${newini}   #no outputing avg
+sed -i "0,/NAVG ==.*/{s/NAVG ==.*/NAVG == 2000000000/}" ${newini}   #no outputing avg
 
 sed -i "0,/DT ==.*/{s/DT ==.*/DT == ${DT}/}" ${newini}
 
 
 TIME_REF=`date --date "$inig days" +%Y%m%d`.0D0   #begin at 00 AM
 
- 
-sed -i "0,/TIME_REF =.*/{s/TIME_REF =.*/TIME_REF = $TIME_REF/}" ${newini}
+INI_REFST=`date --date "$inig days" +%Y-%m-%d`
+ff=`echo $INI_REFST 00:00:00`
+
+startd=($(
+python - <<EOF
+from matplotlib import dates
+print(dates.datestr2num('$ff') - dates.datestr2num('1900-01-01'))
+EOF
+))
+
+TIME_REFSTR=19000101.0D0   #begin at 12 PM
+
+sed -i "0,/DSTART =.*/{s/DSTART =.*/DSTART = $startd/}" ${newini}
+
+sed -i "0,/TIME_REF =.*/{s/TIME_REF =.*/TIME_REF = $TIME_REFSTR/}" ${newini}
 
 sed -i "0,/NHIS ==.*/{s/NHIS ==.*/NHIS == ${sizegrid[4]}/}" ${newini}   
 
@@ -333,10 +378,11 @@ rstfile=\'RST_FILE_`echo ${TIME_FOR} | sed "s/\./_/"`.nc\'
 rstindex=($(
 python - <<EOF
 from netCDF4 import Dataset
+from matplotlib import dates
 import numpy as np
 file=Dataset($rstfile)
 #print(some_text)
-print(int((np.where(file['ocean_time'][:]/(24*60*60)==$numdaysrun + $inig)[0])))
+print(int((np.where(file['ocean_time'][:]/(24*60*60)==dates.datestr2num('$ff') - dates.datestr2num('1900-01-01'))[0])))
 file
 EOF
 ))
@@ -358,6 +404,10 @@ fi
 
 
 ./romsS	< $newini
+
+rm *outer0.nc
+rnm=$(grep HISNAME $newini | head -n 1 | tr -s ' '| sed "s/' '/''/g" | cut -d '=' -f3 | cut -d '.' -f1)
+mv BRSE_fwd_outer1.nc ${rnm}.nc
 
 if [ $DoNest == TRUE ];then
   ./nesting_run_fore_ass.bash $newini
@@ -568,8 +618,22 @@ sed -i "0,/DT ==.*/{s/DT ==.*/DT == ${DT}/}" ${newini}
 
 TIME_REF=`date --date "$inig days" +%Y%m%d`.0D0   #begin at 00 AM
 
+INI_REFST=`date --date "$inig days" +%Y-%m-%d`
+ff=`echo $INI_REFST 00:00:00`
+
+startd=($(
+python - <<EOF
+from matplotlib import dates
+print(dates.datestr2num('$ff') - dates.datestr2num('1900-01-01'))
+EOF
+))
+
+TIME_REFSTR=19000101.0D0   #begin at 12 PM
+
  
-sed -i "0,/TIME_REF =.*/{s/TIME_REF =.*/TIME_REF = $TIME_REF/}" ${newini}
+sed -i "0,/DSTART =.*/{s/DSTART =.*/DSTART = $startd/}" ${newini}
+
+sed -i "0,/TIME_REF =.*/{s/TIME_REF =.*/TIME_REF = $TIME_REFSTR/}" ${newini}
 
 sed -i "0,/NHIS ==.*/{s/NHIS ==.*/NHIS == ${sizegrid[4]}/}" ${newini}   
 
@@ -605,15 +669,19 @@ rstindex=($(
 python - <<EOF
 from netCDF4 import Dataset
 import numpy as np
+from matplotlib import dates
 file=Dataset($rstfile)
 #print(some_text)
-print(int((np.where(file['ocean_time'][:]/(24*60*60)==$numdays)[0])))
+print(int((np.where(file['ocean_time'][:]/(24*60*60)==dates.datestr2num('$ff') - dates.datestr2num('1900-01-01'))[0])))
 file
 EOF
 ))
 
 
-sed -i "0,/NRREC ==.*/{s/NRREC ==.*/NRREC == -1/}" ${newini}   #no outputing avg
+rstindex=$((${rstindex[0]}+1))
+
+
+sed -i "0,/NRREC ==.*/{s/NRREC ==.*/NRREC == $rstindex/}" ${newini}   #no outputing avg
 
 
 if [ $NUDGECLIM == TRUE ];then
