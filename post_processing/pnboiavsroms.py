@@ -70,23 +70,29 @@ from mpl_toolkits.basemap import Basemap
 from matplotlib.pylab import *
 from matplotlib import dates
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import glob
+import xarray as xr
 
-     
 #avgfile=Dataset('HIS_FILE_20200421_5D0-20200428_5D0_hind_correct_year_WEAK_menor_azul_nopline_0005.nc') ##Vitoria 4,5
 #avgfile=Dataset('HIS_FILE_rotate_cabofrio_3_0004.nc')        #CF 1/12
 #avgfile=Dataset('HIS_FILE_rotate_cabofrio_3_HIGH_tmz_2_mm_22_0004.nc')               #CF1/36
 
-#avgfile=Dataset('HIS_FILE_rotate_4_SUL_2_3_2_0004.nc') #SUL 1/12
-avgfile=Dataset('HIS_FILE_rotate_4_SUL_2_3_2_NEST_grid2_lp_all_small_ultra_smaler_0004.nc') #SUL 1/36
+lista = sorted(glob.glob('HIS_FILE_rotate_4_SUL_2_3_2_000[3-4]*')) #SUL 1/12
 
+#lista = sorted(glob.glob('HIS_FILE_rotate_4_SUL_2_3_2_NEST_grid2_lp_all_small_ultra_smaler_000[3-4]*')) #SUL 1/36
 
+avgfile = xr.open_mfdataset(lista, concat_dim='ocean_time')
+
+hh=np.array(avgfile['ocean_time'][:].dt.strftime('%Y-%m-%d  %H:00:00'))
+
+hhdates=dates.datestr2num(hh)
 #fname_grd = 'azul_grd_era_NEW_menor_azul.nc'  #Vitoria
 
 #fname_grd = 'rotate_cf_16_09.nc'    #CF 1/12
 #fname_grd = 'CF_tmz_small026_2.nc'     #CF 1/36
 
-#fname_grd = 'grid_rotated_SUL_2.nc' #SUL 1/12
-fname_grd = 'grid_rotated_SUL_2_NEST_smaler.nc' #SUL 1/12
+fname_grd = 'grid_rotated_SUL_2.nc' #SUL 1/12
+#fname_grd = 'grid_rotated_SUL_2_NEST_smaler.nc' #SUL 1/12
 
 
 ## Load ROMS grid.
@@ -131,25 +137,14 @@ zc=np.array([12.5])
 
 zc=zc[::-1]
 
-uavg=avgfile['u_eastward'][:]
+uavg=np.array(avgfile['u_eastward'][:])
 
-vavg=avgfile['v_northward'][:]
+vavg=np.array(avgfile['v_northward'][:])
 
-time=avgfile['ocean_time'][:]/(24*60*60)
+#time=avgfile['ocean_time'][:]/(24*60*60)
 
-tempavg=avgfile['temp'][:]
+tempavg=np.array(avgfile['temp'][:])
 
-uavg2=avgfile2['u_eastward'][:]
-
-vavg2=avgfile2['v_northward'][:]
-
-time2=avgfile2['ocean_time'][:]
-
-tempavg2=avgfile2['temp'][:]
-
-uavg=np.concatenate([uavg,uavg2], axis=0)
-vavg=np.concatenate([vavg,vavg2], axis=0)
-tempavg=np.concatenate([tempavg,tempavg2], axis=0)
 
 ktl=3
 
@@ -190,9 +185,9 @@ intv=np.squeeze(intv)
 itemp=np.squeeze(itemp)
 
 
-begindate=avgfile['ocean_time'].units[14:]
-begindate=dates.datestr2num(begindate)
-romstime=begindate+time
+#begindate=avgfile['ocean_time'].units[14:]
+#begindate=dates.datestr2num(begindate)
+romstime=hhdates
 
 ########adcp
 
@@ -233,109 +228,16 @@ umed=newadcp['umed']
 
 timevec=newadcp['datas'].values
 
-
-
-vsitu1=vsitu.copy()
-usitu1=usitu.copy()
-
-vmed1=vmed.copy()
-umed1=umed.copy()
-
-timevec1=timevec.copy()
-
-from utils import weim
-
-
-
-vsitu=np.concatenate([vsitu1,vsitu])
-usitu=np.concatenate([usitu1,usitu])
-vmed=np.concatenate([vmed1,vmed])
-umed=np.concatenate([umed1,umed])
-timevec=np.concatenate([timevec1,timevec])
-
 vbeca=vsitu.copy()
 ubeca=usitu.copy()
 
 vson=vsitu.copy()
 uson=usitu.copy()
 
-vsitutdad=weim(vbeca,61)
-usitutdad=weim(ubeca,61)
-
-from utils import weim
-
-vmedt=weim(vmed,61)
-vsitut=weim(vsitu,61)
-umedt=weim(umed,61)
-usitut=weim(usitu,61)
 
 
-
-plt.plot(dates.num2date(timevec),vmedt, 'red', label='PNBOIA')
-plt.plot(dates.num2date(timevec),vsitut, 'blue', label='ROMS')
-ax = plt.gca()
-#ax.set_ylim([-0.4, 0.4])
-
-ax.legend(loc='best')
-plt.show()
-
-
-plt.plot(dates.num2date(timevec),umedt, 'red',label='PNBOIA')
-plt.plot(dates.num2date(timevec),usitut, 'blue',  label='ROMS')
-ax = plt.gca()
-#ax.set_ylim([-0.4, 0.4])
-ax.legend(loc='best')
-plt.show()
-
-
-from scipy import stats
-from sklearn.metrics import mean_squared_error as mse
-
-stats.pearsonr(vmedt,vsitut)
-
-rmsev=np.sqrt(mse(vmedt,vsitut))
-print(rmsev)
-
-
-stats.pearsonr(umedt,usitut)
-
-rmseu=np.sqrt(mse(umedt,usitut))
-print(rmseu)
-
-
-
-vmedt=weim(vmed,31)
-vsitut=weim(vsitu,31)
-umedt=weim(umed,31)
-usitut=weim(usitu,31)
-
-plt.style.use('ggplot')
-
-
-fig, axs = plt.subplots(2, sharex=True, figsize=(8,5))
-#fig.suptitle('Vertically stacked subplots')
-axs[0].plot(dates.num2date(timevec),vsitut, 'red', label='V-component ROMS')
-axs[0].plot(dates.num2date(timevec),vmedt, 'blue', label='V-component PNBOIA')
-legend=axs[0].legend(loc=2, fontsize='x-small')
-legend.get_frame().set_facecolor('grey')
-axs[0].set_ylim([-0.45, 0.55])
-axs[0].tick_params(labelsize=9)
-
-
-axs[1].plot(dates.num2date(timevec),usitut, 'red',  label='U-componen ROMS')
-axs[1].plot(dates.num2date(timevec),umedt, 'blue',label='U-component PNBOIA')
-axs[1].legend(loc=2)
-legend=axs[1].legend(loc=2, fontsize='x-small')
-legend.get_frame().set_facecolor('grey')
-axs[1].set_ylim([-0.45, 0.55])
-fig.text(0.06, 0.5, 'Velocity (m/s)', ha='center', va='center', rotation='vertical', fontsize=12)
-axs[1].tick_params(labelsize=9)
-
-plt.xticks(fontsize=8,rotation=35)
-plt.gcf().subplots_adjust(bottom=0.15)
-fig.text(0.5, 0.9,'Depth = ' + str(float(zc)) + ' m',  fontsize=12, ha='center', va='center')
-
-plt.show()
+vbeca=vbeca[0:1415]
+ubeca=ubeca[0:1415]
 
 #######################################################################  MERCATOR
 
@@ -352,18 +254,26 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 #avgfile=Dataset('HIS_FILE_20200421_5D0-20200428_5D0_hind_correct_year_WEAK_menor_azul_nopline_0005.nc') ##Vitoria 4,5
 #avgfile=Dataset('HIS_FILE_rotate_cabofrio_3_2_0004.nc')   #cabo frio 3,4
-avgfile=Dataset('HIS_FILE_rotate_4_SUL_2_3_2_0004.nc')
 
+
+lista = sorted(glob.glob('HIS_FILE_rotate_4_SUL_2_3_2_NEST_grid2_lp_all_small_ultra_smaler_000[3-4]*'))
+
+avgfile = xr.open_mfdataset(lista, concat_dim='ocean_time')
+
+hh=np.array(avgfile['ocean_time'][:].dt.strftime('%Y-%m-%d  %H:00:00'))
+
+hhdates=dates.datestr2num(hh)
 
 #fname_grd = 'azul_grd_era_NEW_menor_azul.nc'  #Vitoria
 #fname_grd = 'rotate_cf_16_09_2.nc'    #CF
-fname_grd = 'grid_rotated_SUL_2.nc' #SUL 1/12
+fname_grd = 'grid_rotated_SUL_2_NEST_smaler.nc' #SUL 1/36
 
 
-time=avgfile['ocean_time'][:]/(24*60*60)
-begindate=avgfile['ocean_time'].units[14:]
-begindate=dates.datestr2num(begindate)
-romstime=begindate+time
+#time=avgfile['ocean_time'][:]/(24*60*60)
+#begindate=avgfile['ocean_time'].units[14:]
+#begindate=dates.datestr2num(begindate)
+#romstime=begindate+time
+romstime=hhdates
 
 timeini=dates.num2date(romstime[0]  - 1).strftime("%Y%m%d")
 timeend=dates.num2date(romstime[-1]).strftime("%Y%m%d")
@@ -581,35 +491,7 @@ timevec=newadcp['datas'].values
 from utils import weim
 
 
-vsitu1=vsitu.copy()
-usitu1=usitu.copy()
 
-vmed1=vmed.copy()
-umed1=umed.copy()
-
-timevec1=timevec.copy()
-
-
-
-vsitu=np.concatenate([vsitu1,vsitu])
-usitu=np.concatenate([usitu1,usitu])
-vmed=np.concatenate([vmed1,vmed])
-umed=np.concatenate([umed1,umed])
-timevec=np.concatenate([timevec1,timevec])
-
-vmedt=weim(vmed,61)
-vsitut=weim(vsitu,61)
-umedt=weim(umed,61)
-usitut=weim(usitu,61)
-
-
-vsitutdad=weim(vbeca,61)
-usitutdad=weim(ubeca,61)
-
-
-
-vsitutnest=weim(vson, 61)
-usitutnest=weim(uson, 61)
 
 
 vmedt=weim(vmed,81)
@@ -708,8 +590,8 @@ plt.style.use('ggplot')
 
 fig, axs = plt.subplots(2, sharex=True, figsize=(9,6))
 #fig.suptitle('Vertically stacked subplots')
-#axs[0].plot(dates.num2date(timevec),vsitut, 'r--', label='V-component MERCATOR')
-#axs[0].plot(dates.num2date(timevec),vsitutdad, 'green',linestyle='--', label='V-component ROMS PARENT')
+axs[0].plot(dates.num2date(timevec),vsitut, 'r--', label='V-component MERCATOR')
+axs[0].plot(dates.num2date(timevec),vsitutdad, 'green',linestyle='--', label='V-component ROMS PARENT')
 #axs[0].plot(dates.num2date(timevec),vsitutdad, 'green',linestyle='--', label='V-component ROMS')
 axs[0].plot(dates.num2date(timevec),vsitutnest, 'black',linestyle='--', label='V-component ROMS NEST')
 axs[0].plot(dates.num2date(timevec),vmedt, 'blue', label='V-component PNBOIA')
@@ -720,8 +602,8 @@ axs[0].tick_params(labelsize=8)
 
 
 
-#axs[1].plot(dates.num2date(timevec),usitut, 'r--',  label='U-component MERCATOR')
-#axs[1].plot(dates.num2date(timevec),usitutdad, 'green',linestyle='--',  label='U-component ROMS PARENT')
+axs[1].plot(dates.num2date(timevec),usitut, 'r--',  label='U-component MERCATOR')
+axs[1].plot(dates.num2date(timevec),usitutdad, 'green',linestyle='--',  label='U-component ROMS PARENT')
 #axs[1].plot(dates.num2date(timevec),usitutdad, 'green',linestyle='--',  label='U-component ROMS')
 axs[1].plot(dates.num2date(timevec),usitutnest, 'black',linestyle='--', label='U-component ROMS NEST')
 axs[1].plot(dates.num2date(timevec),umedt, 'blue',label='U-component PNBOIA')
