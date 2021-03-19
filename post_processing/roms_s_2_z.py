@@ -11,10 +11,10 @@ import matplotlib.patheffects as PathEffects
 import cmocean
 
    
-     
-avgfile=Dataset('HIS_FILE_20201012_5D0-20201019_5D0_fore_NEST_1_NEST_2.nc')
+          
+avgfile=Dataset('HIS_FILE_20210316_0D0-20210317_0D0_fore_NEST_1.nc')
 
-fname_grd = 'abc2.nc'
+fname_grd = 'abc1.nc'
 
 ## Load ROMS grid.
 grd = Dataset(fname_grd)
@@ -132,7 +132,7 @@ figdates=dates.num2date(begindate+time)
 tim=-1
 lay=-1
 
-sp=2
+sp=3
 
 up=u[tim,lay,:,:]
 
@@ -144,14 +144,17 @@ vv=vp
 
 val=np.sqrt((uu**2)+(vv**2))
 
-a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=1)
+a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=1.)
 #a=plt.pcolor(x_roms,y_roms, np.squeeze(val),vmin=val.min(),vmax=val.max())
-cnt=plt.contour(x_roms,y_roms,h_roms,levels=[200],colors=('red'))
+#cnt=plt.contour(x_roms,y_roms,h_roms,levels=[200],colors=('red'))
 plt.quiver(x_roms[0:-1:sp, 0:-1:sp],y_roms[0:-1:sp, 0:-1:sp],uu[0:-1:sp, 0:-1:sp], vv[0:-1:sp, 0:-1:sp])
 #plt.text(-49,-28,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
 #        bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
-plt.text(-43,-25,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
+plt.text(-30,-25,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
         bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
+x5,y5=(-42.2049,-23.6321)
+plt.plot(x5,y5,color='indigo', linestyle='none', marker="o", markersize=7, alpha=1., markeredgecolor="black", markeredgewidth=1.5, label='Boia Cabo Frio')
+plt.legend(loc=1, bbox_to_anchor=(0.3,0.1), prop={'weight':'bold'})
 plt.colorbar(a)
 plt.show()
 
@@ -172,10 +175,10 @@ tim=-1
 lay=-1
 
 a=temp[tim,lay,:]
-aa=plt.pcolor(x_roms,y_roms, np.squeeze(a),vmin=21,vmax=27)
-#aa=plt.pcolor(x_roms,y_roms, np.squeeze(a))
+#aa=plt.pcolor(x_roms,y_roms, np.squeeze(a),vmin=18,vmax=27)
+aa=plt.pcolor(x_roms,y_roms, np.squeeze(a))
 plt.colorbar(aa)
-plt.text(-40,-18,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
+plt.text(-30,-25,figdates[tim].strftime("%m%d - %-I %p"), fontsize=12, fontweight='bold',
         bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
 plt.show()
 
@@ -387,7 +390,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.patheffects as PathEffects
 import cmocean
      
-avgfile=Dataset('HIS_FILE_20201012_5D0-20201019_5D0_fore.nc')
+avgfile=Dataset('HIS_FILE_20201014_5D0-20201021_5D0_fore.nc')
 
 fname_grd = 'azul_grd2.nc'
 
@@ -463,7 +466,7 @@ v1=np.ma.masked_invalid(intv)
 
 
      
-avgfile=Dataset('HIS_FILE_20201012_5D0-20201019_5D0_fore_NEST_1.nc')
+avgfile=Dataset('HIS_FILE_20201014_5D0-20201021_5D0_fore_NEST_1.nc')
 
 fname_grd = 'abc1.nc'
 
@@ -541,7 +544,7 @@ v2=np.ma.masked_invalid(intv)
 
 
      
-avgfile=Dataset('HIS_FILE_20201012_5D0-20201019_5D0_fore_NEST_1_NEST_2.nc')
+avgfile=Dataset('HIS_FILE_20201014_5D0-20201021_5D0_fore_NEST_1_NEST_2.nc')
 
 fname_grd = 'abc2.nc'
 
