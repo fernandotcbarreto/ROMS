@@ -507,9 +507,11 @@ for i in range(len(frevec)):
         
         now = dt.now()
         
-        outfile = output_path+run_name+'_'+str(25+i) + filenamestr
+#        outfile = output_path+run_name+'_'+str(25+i) + filenamestr    ###uncomment when big files
 
 #        outfile = output_path+run_name+'_'+'2013_12_30'+ filenamestr
+
+        outfile = run_name + filenamestr
         
         ncfile = Dataset(outfile, mode='w', clobber='true', format='NETCDF3_CLASSIC')
         # creating DIMENSIONS.        
