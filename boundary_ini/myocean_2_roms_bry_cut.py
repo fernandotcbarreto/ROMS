@@ -15,7 +15,7 @@ from scipy.interpolate import griddata, interp1d
 from datetime import datetime as dt
 from parameters_bry_in import *
 import matplotlib.dates as dates
-from funcs_interpolation import horiz_interp_3dvar_cut, vert_interp_3dvar_cut
+from funcs_interpolation import horiz_interp_3dvar_cut, vert_interp_3dvar_cut, horiz_interp_3dvar
 
 
 ##--------------
