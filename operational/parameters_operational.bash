@@ -48,6 +48,7 @@ DT=360.          # timestep in second of the father grid
 
 rotatedid=True
 cuttedid=True
+cuttedidM=False
 
 lim=2
 

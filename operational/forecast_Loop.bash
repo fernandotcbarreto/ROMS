@@ -132,7 +132,7 @@ boundtime=`date --date "$inim days" +%Y%m%d`
 
  sed -i "0,/rotated=.*/{s@rotated=.*@rotated=False@}" parameters_bry_in.py
 
- sed -i "0,/cutted=.*/{s@cutted=.*@cutted=True@}" parameters_bry_in.py
+ sed -i "0,/cutted=.*/{s@cutted=.*@cutted=$cuttedidM@}" parameters_bry_in.py
 
 
 python myocean_2_roms_bry_cut.py
