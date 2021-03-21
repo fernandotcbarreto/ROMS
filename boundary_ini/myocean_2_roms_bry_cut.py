@@ -171,6 +171,7 @@ for i in range(len(frevec)):
 
   
     if True:
+      if cutted:
         ## Horizontally interpolate free-surface height.
         print ("Horizontally interpolate free-surface height.")
         points = (x_fm.ravel(),y_fm.ravel())
@@ -230,6 +231,32 @@ for i in range(len(frevec)):
         SALT_int2d[:,:,-2:] = a        
         np.save('SALT_int2d.npy', SALT_int2d); del SALT_int2d        
         
+        #exit()
+      else:
+        print('not cutted')
+        print ("Horizontally interpolate free-surface height.")
+        points = (x_fm.ravel(),y_fm.ravel())
+        print ('')
+        interp_points = (x_roms.ravel(),y_roms.ravel())
+        zeta_int2d = griddata(points, ssh_fm.ravel(), interp_points, method='linear').reshape(sh2)
+        print ('')
+        f = np.isnan(zeta_int2d)
+        points = (x_roms[~f],y_roms[~f])
+        zeta_int2d = griddata(points, zeta_int2d[~f], interp_points, method='nearest').reshape(sh2)
+        np.save('ZETA_int2d.npy',zeta_int2d)
+        ## Interpolate U, V, TEMP and SALT horizontally to the ROMS grid points.
+        U_int2d = horiz_interp_3dvar(u_fm, x_fm, y_fm, -z_fm, x_roms, y_roms, h_roms)
+        np.save('U_int2d.npy', U_int2d.filled()); del U_int2d
+
+        V_int2d = horiz_interp_3dvar(v_fm, x_fm, y_fm, -z_fm, x_roms, y_roms, h_roms)
+        np.save('V_int2d.npy', V_int2d.filled()); del V_int2d
+
+        TEMP_int2d = horiz_interp_3dvar(temp_fm, x_fm, y_fm, -z_fm, x_roms, y_roms, h_roms)
+        np.save('TEMP_int2d.npy', TEMP_int2d.filled()); del TEMP_int2d
+
+        SALT_int2d = horiz_interp_3dvar(salt_fm, x_fm, y_fm, -z_fm, x_roms, y_roms, h_roms)
+        np.save('SALT_int2d.npy', SALT_int2d.filled()); del SALT_int2d
+        #exit() 
         #exit()
 
     print ('passou oii')
