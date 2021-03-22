@@ -23,16 +23,16 @@ def vel_conv(vel,dir):
 ###############adcp
 
 #adcphis=pd.read_csv('historico_itajai.txt')
-adcphis=pd.read_csv('historico_santos.txt')
-#adcphis=pd.read_csv('historico_cabofrio.txt')
+#adcphis=pd.read_csv('historico_santos.txt')
+adcphis=pd.read_csv('historico_vitoria.txt')
 adcphis[adcphis.Lat<-100]=np.nan
 adcphis = adcphis.dropna()
 lat=adcphis['Lat'].min()
 lon=adcphis['Lon'].min()
 
 #adcp=pd.read_csv('adcptratados_itajai.csv')
-adcp=pd.read_csv('adcptratados_santos.csv')
-#adcp=pd.read_csv('adcptratados_cabofrio2.csv')
+#adcp=pd.read_csv('adcptratados_santos.csv')
+adcp=pd.read_csv('adcptratados_vitoria_2.csv')
 adcp[adcp.Cdir3>360]=np.nan
 adcp = adcp.dropna()
 adcp.reset_index(inplace=True)
@@ -40,7 +40,8 @@ adcp['Lat']=lat
 adcp['Lon']=lon
 adcp['datas']=dates.datestr2num(adcp.data)
 
-vel, dir='Cvel3','Cdir3'
+#vel, dir='Cvel3','Cdir3'
+vel, dir='Cvel1','Cdir1'
 #vel, dir='Cvel12','Cdir12'
 #vel, dir='Cvel14','Cdir14'
 #vel, dir='Cvel9','Cdir9'
@@ -78,14 +79,14 @@ import xarray as xr
 
 lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1_00[8-9][0-9]*')) + sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1_01[0-4][0-9]*'))
 
-lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1_01[0-4][0-9]*'))
-lista = sorted(glob.glob('ocean_BRSE_his_b1_0216.nc'))
+lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b22_00[2-9][0-9]*')) + sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b3_00[0-4][0-9]*'))
+#lista = sorted(glob.glob('ocean_BRSE_his_b1_0216.nc'))
 
-lista = sorted(glob.glob('/mnt/share/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1_01[0-4][0-9]*'))
+#lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b3_00[0-4][0-9]*'))
 
 
-#avgfile = xr.open_mfdataset(lista, concat_dim='ocean_time')
-avgfile = xr.open_mfdataset(lista, concat_dim='ocean_time', decode_cf=False)
+avgfile = xr.open_mfdataset(lista, concat_dim='ocean_time')
+#avgfile = xr.open_mfdataset(lista, concat_dim='ocean_time', decode_cf=False)
 
 
 hh=np.array(avgfile['ocean_time'][:].dt.strftime('%Y-%m-%d  %H:00:00'))
@@ -94,6 +95,7 @@ hhdates=dates.datestr2num(hh)
 
 fname_grd = 'BRSE_2012_GRD.nc'     #CF 1/36
 
+tlst=list(np.arange(0,hh.shape[0],12))
 
 ## Load ROMS grid.
 grd = Dataset(fname_grd)
@@ -123,7 +125,7 @@ Vtransform = 1
 Vstretching = 1
 Spherical = True
 
-lst=list(np.arange(20,30))
+lst=list(np.arange(10,30))
 
 if Vstretching==4:
   scoord = s_coordinate_4(h_roms, theta_b, theta_s, tcline, klevels)   #zeta is not used in the computation 
@@ -136,7 +138,8 @@ zr = -scoord.z_r[:]
 
 zr=zr[lst,1:-1,1:-1] 
 
-zc=np.array([12.5])
+#zc=np.array([12.5])
+zc=np.array([5.5])
 #zc=np.array([47.5])
 #zc=np.array([44])
 #zc=np.array([33.5])
@@ -151,7 +154,7 @@ lonv=np.array(avgfile['lon_v'][:])
 lonu=np.array(avgfile['lon_u'][:])
 latu=np.array(avgfile['lat_u'][:])
 
-uavg=np.array(avgfile.u.isel(s_rho=lst).values)
+uavg=np.array(avgfile.u.isel(s_rho=lst).isel(ocean_time=tlst).values)
 
 
 uavg = 0.5*(uavg[:,:,:,1:]+uavg[:,:,:,:-1])
@@ -165,7 +168,7 @@ latu=latu[1:-1,:]
 
 ##np.array(avgfile.u.isel(s_rho=lst).isel(ocean_time=[1,2]).values)
 
-vavg=np.array(avgfile.v.isel(s_rho=lst).values)
+vavg=np.array(avgfile.v.isel(s_rho=lst).isel(ocean_time=tlst).values)
 
 vavg = 0.5*(vavg[:,:,1:,:]+vavg[:,:,:-1,:])
 latv = 0.5*(latv[1:,:]+latv[:-1,:])
@@ -176,7 +179,7 @@ lonv=lonv[:,1:-1]
 latv=latv[:,1:-1]
 
 
-#tempavg=np.array(avgfile.temp.isel(s_rho=lst).values)
+#tempavg=np.array(avgfile.temp.isel(s_rho=lst).isel(ocean_time=tlst).values)
 #tempavg=tempavg[:,:,1:-1,1:-1]
 
 ktl=3
@@ -217,7 +220,7 @@ intv=np.squeeze(intv)
 itemp=np.squeeze(itemp)
 
 
-romstime=hhdates
+romstime=hhdates[tlst]
 
 ########adcp
 
@@ -644,8 +647,8 @@ vmedt=weim(vmed,81)
 umedt=weim(umed,81)
 vsitut=weim(vsitu,31)
 usitut=weim(usitu,31)
-vsitutdad=weim(vbeca,61)
-usitutdad=weim(ubeca,61)
+vsitutdad=weim(vbeca,31)
+usitutdad=weim(ubeca,31)
 vsitutnest=weim(vson, 61)
 usitutnest=weim(uson, 61)
 
@@ -653,19 +656,19 @@ plt.style.use('ggplot')
 
 fig, axs = plt.subplots(2, sharex=True, figsize=(9,6))
 #fig.suptitle('Vertically stacked subplots')
-axs[0].plot(dates.num2date(timevec),vsitut, 'r--', label='V-component MERCATOR')
+#axs[0].plot(dates.num2date(timevec),vsitut, 'r--', label='V-component MERCATOR')
 #axs[0].plot(dates.num2date(timevec),vsitutdad, 'green',linestyle='--', label='V-component ROMS PARENT')
 axs[0].plot(dates.num2date(timevec),vsitutdad, 'green',linestyle='--', label='V-component ROMS')
-axs[0].plot(dates.num2date(timevec),vsitutnest, 'black',linestyle='--', label='V-component ROMS NEST')
+#axs[0].plot(dates.num2date(timevec),vsitutnest, 'black',linestyle='--', label='V-component ROMS NEST')
 axs[0].plot(dates.num2date(timevec),vmedt, 'blue', label='V-component PNBOIA')
 legend=axs[0].legend(loc=2, fontsize='xx-small')
 legend.get_frame().set_facecolor('grey')
-axs[0].set_ylim([-0.3, 0.3])
+#axs[0].set_ylim([-0.3, 0.3])
 axs[0].tick_params(labelsize=8)
 
 
 
-axs[1].plot(dates.num2date(timevec),usitut, 'r--',  label='U-component MERCATOR')
+#axs[1].plot(dates.num2date(timevec),usitut, 'r--',  label='U-component MERCATOR')
 #axs[1].plot(dates.num2date(timevec),usitutdad, 'green',linestyle='--',  label='U-component ROMS PARENT')
 axs[1].plot(dates.num2date(timevec),usitutdad, 'green',linestyle='--',  label='U-component ROMS')
 axs[1].plot(dates.num2date(timevec),usitutnest, 'black',linestyle='--', label='U-component ROMS NEST')
@@ -673,7 +676,7 @@ axs[1].plot(dates.num2date(timevec),umedt, 'blue',label='U-component PNBOIA')
 axs[1].legend(loc=2)
 legend=axs[1].legend(loc=2, fontsize='xx-small')
 legend.get_frame().set_facecolor('grey')
-axs[1].set_ylim([-0.5, 0.3])
+#axs[1].set_ylim([-0.5, 0.3])
 axs[1].tick_params(labelsize=8)
 
 
