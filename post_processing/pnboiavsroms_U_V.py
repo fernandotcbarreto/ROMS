@@ -41,9 +41,9 @@ adcp['Lon']=lon
 adcp['datas']=dates.datestr2num(adcp.data)
 
 #vel, dir='Cvel3','Cdir3'
-vel, dir='Cvel1','Cdir1'
+#vel, dir='Cvel1','Cdir1'
 #vel, dir='Cvel12','Cdir12'
-#vel, dir='Cvel14','Cdir14'
+vel, dir='Cvel14','Cdir14'
 #vel, dir='Cvel9','Cdir9'
 #vel, dir='Cvel20','Cdir20'
 
@@ -82,8 +82,9 @@ lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1
 lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b22_00[2-9][0-9]*')) + sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b3_00[0-4][0-9]*'))
 #lista = sorted(glob.glob('ocean_BRSE_his_b1_0216.nc'))
 
-#lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b3_00[0-4][0-9]*'))
+#lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1_0[3-4][0-9][0-9]*'))
 
+#lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1_0[0-9][0-9][0-9]*'))
 
 avgfile = xr.open_mfdataset(lista, concat_dim='ocean_time')
 #avgfile = xr.open_mfdataset(lista, concat_dim='ocean_time', decode_cf=False)
@@ -95,7 +96,7 @@ hhdates=dates.datestr2num(hh)
 
 fname_grd = 'BRSE_2012_GRD.nc'     #CF 1/36
 
-tlst=list(np.arange(0,hh.shape[0],12))
+tlst=list(np.arange(0,hh.shape[0],24))
 
 ## Load ROMS grid.
 grd = Dataset(fname_grd)
@@ -125,7 +126,7 @@ Vtransform = 1
 Vstretching = 1
 Spherical = True
 
-lst=list(np.arange(10,30))
+lst=list(np.arange(0,30))
 
 if Vstretching==4:
   scoord = s_coordinate_4(h_roms, theta_b, theta_s, tcline, klevels)   #zeta is not used in the computation 
@@ -139,10 +140,10 @@ zr = -scoord.z_r[:]
 zr=zr[lst,1:-1,1:-1] 
 
 #zc=np.array([12.5])
-zc=np.array([5.5])
+#zc=np.array([5.5])
 #zc=np.array([47.5])
 #zc=np.array([44])
-#zc=np.array([33.5])
+zc=np.array([51])
 #zc=np.array([72.])
 
 
@@ -647,8 +648,8 @@ vmedt=weim(vmed,81)
 umedt=weim(umed,81)
 vsitut=weim(vsitu,31)
 usitut=weim(usitu,31)
-vsitutdad=weim(vbeca,31)
-usitutdad=weim(ubeca,31)
+vsitutdad=weim(vbeca,15)
+usitutdad=weim(ubeca,15)
 vsitutnest=weim(vson, 61)
 usitutnest=weim(uson, 61)
 
@@ -671,7 +672,7 @@ axs[0].tick_params(labelsize=8)
 #axs[1].plot(dates.num2date(timevec),usitut, 'r--',  label='U-component MERCATOR')
 #axs[1].plot(dates.num2date(timevec),usitutdad, 'green',linestyle='--',  label='U-component ROMS PARENT')
 axs[1].plot(dates.num2date(timevec),usitutdad, 'green',linestyle='--',  label='U-component ROMS')
-axs[1].plot(dates.num2date(timevec),usitutnest, 'black',linestyle='--', label='U-component ROMS NEST')
+#axs[1].plot(dates.num2date(timevec),usitutnest, 'black',linestyle='--', label='U-component ROMS NEST')
 axs[1].plot(dates.num2date(timevec),umedt, 'blue',label='U-component PNBOIA')
 axs[1].legend(loc=2)
 legend=axs[1].legend(loc=2, fontsize='xx-small')
@@ -717,3 +718,175 @@ plt.gcf().subplots_adjust(bottom=0.15)
 plt.show()
 
 
+############################################################################################## Mooring
+
+
+from vgrid import s_coordinate, s_coordinate_2, s_coordinate_4
+from netCDF4 import Dataset 
+from scipy.interpolate import griddata, interp1d
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.basemap import Basemap
+from matplotlib.pylab import *
+from matplotlib import dates
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import glob
+import xarray as xr
+
+#lista = sorted(glob.glob('ocean_BRSE_his_b5_000[0-9]*'))
+lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1_0[3-4][0-9][0-9]*'))
+
+avgfile = xr.open_mfdataset(lista, concat_dim='ocean_time')
+
+
+hh=np.array(avgfile['ocean_time'][:].dt.strftime('%Y-%m-%d  %H:00:00'))
+
+hhdates=dates.datestr2num(hh)
+
+fname_grd = 'BRSE_2012_GRD.nc'     #CF 1/36
+
+tlst=list(np.arange(0,hh.shape[0],1))
+
+## Load ROMS grid.
+grd = Dataset(fname_grd)
+x_roms = grd.variables['lon_rho'][:]
+y_roms = grd.variables['lat_rho'][:]
+msk_roms = grd.variables['mask_rho'][:]
+msk_romsv = grd.variables['mask_v'][:]
+h_roms = grd.variables['h'][:]
+sh2 = msk_roms.shape
+etamax, ximax = sh2
+
+x_roms=x_roms[1:-1,1:-1]
+y_roms=y_roms[1:-1,1:-1]
+
+lat=np.array([-20.1])
+lon=np.array([-39.4])
+
+
+ltlatlon=abs(y_roms - lat)
+lglatlon=abs(x_roms - lon)
+latlon=ltlatlon + lglatlon
+ltmin=int(np.where(latlon == latlon.min())[0])
+lgmin=int(np.where(latlon == latlon.min())[1])
+
+theta_b = 0.4
+theta_s = 5.0
+tcline = 3.
+klevels = 30
+Vtransform = 1
+Vstretching = 1
+Spherical = True
+
+lst=list(np.arange(0,30))
+
+if Vstretching==4:
+  scoord = s_coordinate_4(h_roms, theta_b, theta_s, tcline, klevels)   #zeta is not used in the computation 
+elif Vstretching==2:
+  scoord = s_coordinate_2(h_roms, theta_b, theta_s, tcline, klevels)
+elif Vstretching==1:
+  scoord = s_coordinate(h_roms, theta_b, theta_s, tcline, klevels)
+
+zr = -scoord.z_r[:]
+
+zr=zr[lst,1:-1,1:-1] 
+
+zc=np.array([50,150, 370,800])
+
+
+zc=zc[::-1]
+
+
+latv=np.array(avgfile['lat_v'][:])
+lonv=np.array(avgfile['lon_v'][:])
+lonu=np.array(avgfile['lon_u'][:])
+latu=np.array(avgfile['lat_u'][:])
+
+#uavg=np.array(avgfile.u.isel(s_rho=lst).isel(ocean_time=tlst).values)
+
+#uavg=np.array(avgfile.u.isel(s_rho=lst).groupby('ocean_time.month').mean().values)
+
+
+
+#uavg = 0.5*(uavg[:,:,:,1:]+uavg[:,:,:,:-1])
+lonu = 0.5*(lonu[:,1:]+lonu[:,:-1])
+latu = 0.5*(latu[:,1:]+latu[:,:-1])
+
+
+#uavg=uavg[:,:,1:-1,:]
+lonu=lonu[1:-1,:]
+latu=latu[1:-1,:]
+
+##np.array(avgfile.u.isel(s_rho=lst).isel(ocean_time=[1,2]).values)
+
+#vavg=np.array(avgfile.v.isel(s_rho=lst).isel(ocean_time=tlst).values)
+
+vavg=np.array(avgfile.v.isel(s_rho=lst).groupby('ocean_time.month').mean().values)
+
+
+vavg = 0.5*(vavg[:,:,1:,:]+vavg[:,:,:-1,:])
+latv = 0.5*(latv[1:,:]+latv[:-1,:])
+lonv = 0.5*(lonv[1:,:]+lonv[:-1,:])
+
+vavg=vavg[:,:,:,1:-1]
+lonv=lonv[:,1:-1]
+latv=latv[:,1:-1]
+
+
+#tempavg=np.array(avgfile.temp.isel(s_rho=lst).isel(ocean_time=tlst).values)
+#tempavg=tempavg[:,:,1:-1,1:-1]
+
+ktl=3
+
+#uavg=uavg[:,:,ltmin-ktl:ltmin+ktl, lgmin-ktl:lgmin+ktl]
+vavg=vavg[:,:,ltmin-ktl:ltmin+ktl, lgmin-ktl:lgmin+ktl]
+#tempavg=tempavg[:,:,ltmin-ktl:ltmin+ktl, lgmin-ktl:lgmin+ktl]
+x_roms=x_roms[ltmin-ktl:ltmin+ktl, lgmin-ktl:lgmin+ktl]
+y_roms=y_roms[ltmin-ktl:ltmin+ktl, lgmin-ktl:lgmin+ktl]
+
+
+intu=np.zeros([vavg.shape[0],len(zc),x_roms.shape[0], x_roms.shape[1]])
+
+intv=np.zeros([vavg.shape[0],len(zc),x_roms.shape[0], x_roms.shape[1]])
+
+itemp=np.zeros([vavg.shape[0],len(zc),x_roms.shape[0], x_roms.shape[1]])
+
+#zeta=avgfile['zeta'][:]
+
+for j in range(intu.shape[2]):
+  for k in range(intu.shape[3]):
+    if (zr[-1,j,k] > zc.min()):
+      zr[-1,j,k] = zc.min()
+
+zr=zr[:,ltmin-ktl:ltmin+ktl, lgmin-ktl:lgmin+ktl]
+
+UNDEF=np.nan
+
+for i in range(intu.shape[0]):
+  for j in range(intu.shape[2]):
+    for k in range(intu.shape[3]):
+#      intu[i,:,j,k] = np.interp(-zc, -zr[:,j,k], uavg[i,:,j,k], right=UNDEF, left=UNDEF)
+      intv[i,:,j,k] = np.interp(-zc, -zr[:,j,k], vavg[i,:,j,k], right=UNDEF, left=UNDEF)
+#      itemp[i,:,j,k] = np.interp(-zc, -zr[:,j,k], tempavg[i,:,j,k], right=UNDEF, left=UNDEF)
+
+intu=np.squeeze(intu)
+intv=np.squeeze(intv)
+itemp=np.squeeze(itemp)
+
+
+intv=intv.mean(axis=0)
+############################################################
+vsitu=np.zeros(len(zc))
+usitu=np.zeros(len(zc))
+
+for i in range(len(vsitu)):
+  vsitu[i]=griddata((x_roms.ravel(),y_roms.ravel()), intv[i,:].ravel(), (lon,lat))
+#  usitu[i]=griddata((x_roms.ravel(),y_roms.ravel()), intu[i,:].ravel(), (lon,lat))
+
+
+vstd=np.zeros(len(zc))
+ustd=np.zeros(len(zc))
+
+for i in range(len(vsitu)):
+  vstd[i]=griddata((x_roms.ravel(),y_roms.ravel()), intv[i,:].ravel(), (lon,lat))
+  ustd[i]=griddata((x_roms.ravel(),y_roms.ravel()), intu[i,:].ravel(), (lon,lat))

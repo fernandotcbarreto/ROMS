@@ -158,7 +158,7 @@ v2    = intv[2,:].copy()
 
 v2=np.ma.masked_invalid(v2)
 
-#vald=np.where(zc<3000)  
+vald=np.where(zc<3000)  
 #vald=np.where(zc<400)  
 vald=np.where((zc>400)&(zc<1000))  
 row,col=np.where((lat<-20.5) & (lat>-23.5) & (lon<-39.4) & (lon>-40))
@@ -263,7 +263,7 @@ for i in range(len(transpy)):
   v2[v2<0] = np.nan
   v2=np.ma.masked_invalid(v2)
   #vald=np.where(zc<400)  
-  vald=np.where((zc>500)&(zc<1200))  
+  vald=np.where((zc>500)&(zc<1500))  
   row,col=np.where((lat<-20.5) & (lat>-23.5) & (lon<-39.4) & (lon>-40))
   #row,col=np.where((lat<-20.5) & (lat>-23.5) & (lon<-39) & (lon>-40.74))  #23
   row=np.unique(row)
@@ -304,24 +304,38 @@ plt.show()
 s_r=avgfile.s_rho.values
 s_r[-1]=0
 
-idxs=np.argmin(np.abs(((np.abs(y_roms[:,0]) - 22))))
+idxs=np.argmin(np.abs(((np.abs(y_roms[:,0]) - 20.8))))
+#idxs=np.argmin(np.abs(((np.abs(y_roms[:,0]) - 22.7))))
 
-depm=np.zeros([len(s_r), len(x_roms[0,:])])
-for i in range(depm.shape[1]):
-  depm[:,i]=s_r*h_roms[idxs,i]
+
+#depm=np.zeros([len(s_r), len(x_roms[0,:])])
+#for i in range(depm.shape[1]):
+#  depm[:,i]=s_r*h_roms[idxs,i]
+
+depm=-zr[:,idxs,:]
 
 uu,oo=np.meshgrid(x_roms[idxs,:], np.arange(0,len(s_r)))
 
 lind=depm[0,:]
 
+levels = np.arange(-0.5,0.5,0.1)
+
+vm=vavg[8:10,::]
+vm=vm.mean(axis=0)
+
+#vm=vavg[10,::]
+
+vm=vavg.mean(axis=0)
+
 [fig, ax] = plt.subplots(ncols=1, nrows=1, figsize=[7,5])
-#yy=ax.pcolor(uu,depm, np.ma.masked_invalid(np.squeeze(vavg[7,:,idxs,:])), cmap=plt.get_cmap('seismic'), vmin=-0.7, vmax=0.7)
-yy=ax.pcolormesh(uu,depm, np.ma.masked_invalid(np.squeeze(vavg[7,:,idxs,:])), cmap=plt.get_cmap('seismic'), vmin=-0.7, vmax=0.7, shading='gouraud')
+#yy=ax.pcolor(uu,depm, np.ma.masked_invalid(np.squeeze(vavg[7,:,idxs,:])), cmap=plt.get_cmap('seismic'), vmin=-0.4, vmax=0.4)
+yy=ax.pcolormesh(uu,depm, np.ma.masked_invalid(np.squeeze(vm[:,idxs,:])), cmap=plt.get_cmap('seismic'), vmin=-0.4, vmax=0.4, shading='gouraud')
 ax.fill_between(uu[0,:], lind, lind*0-5000, color='lightgrey', alpha=1)
-cnt=ax.contour(uu,depm, np.ma.masked_invalid(np.squeeze(vavg[7,:,idxs,:])),levels=[-0.6,-0.5,-0.4,-0.2, 0, 0.1, 0.2, 0.3],colors=('k'), linewidths=0.5)
-#cnt=ax.contour(uu,depm, np.ma.masked_invalid(np.squeeze(vavg[7,:,idxs,:])),levels=[-0.6,-0.5,-0.4,-0.2],colors=('k'), linewidths=0.5)
-clabels=ax.clabel(cnt, inline=True, colors='k', fmt = '%.1f',fontsize=4)
-[txt.set_path_effects([PathEffects.withStroke(linewidth=3, foreground='w')]) for txt in clabels]
+cnt=ax.contour(uu,depm, np.ma.masked_invalid(np.squeeze(vm[:,idxs,:])),levels=levels,colors=('k'), linewidths=0.5)
+plt.rcParams['contour.negative_linestyle'] = 'dashed'
+ax.plot(uu[0,:], lind, color='black', linewidth=1.5)
+#clabels=ax.clabel(cnt, inline=True, colors='k', fmt = '%1.1f',fontsize=6)
+#[txt.set_path_effects([PathEffects.withStroke(linewidth=3, foreground='w')]) for txt in clabels]
 cax = fig.add_axes([0.91, 0.3, 0.02, 0.38])
 cbar=fig.colorbar(yy, shrink=0.8, extend='both', ax=ax, cax=cax)
 cbar.ax.set_ylabel('Velocity(m/s)', rotation=270)
@@ -330,8 +344,10 @@ cbar.ax.tick_params(labelsize=9)
 text = cbar.ax.yaxis.label
 font = matplotlib.font_manager.FontProperties(family='times new roman', style='normal', size=12)
 text.set_font_properties(font)
-ax.set_xlim([-40.5,-39.3])
-ax.set_ylim([-2500,0])
+#ax.set_xlim([-41.5,-39.0])
+ax.set_xlim([-40.5,-37.0])
+ax.set_ylim([-2000,0])
 ax.set_xlabel('Longitude (°)')
 ax.set_ylabel('Depth (m)')
+plt.savefig('21.png', dpi=200, bbox_inches='tight', transparent=False)
 plt.show()
