@@ -9,6 +9,8 @@ from matplotlib import dates
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import glob
 import xarray as xr
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
 lista = sorted(glob.glob('ocean_BRSE_his_b5_000[0-9]*'))
 
@@ -33,6 +35,8 @@ etamax, ximax = sh2
 
 x_roms=x_roms[1:-1,1:-1]
 y_roms=y_roms[1:-1,1:-1]
+h_roms=h_roms[1:-1,1:-1]
+
 
 
 theta_b = 0.4
@@ -134,12 +138,12 @@ import netCDF4 as nc
 from matplotlib.patches import Polygon
 from cookb_signalsmooth import smooth
 
-
+tim=0
 lon  = x_roms
 lat  = y_roms
-u    = intu[-1,:]
-v    = intv[-1,:]
-t    = itemp[-1,:]
+u    = intu[tim,:]
+v    = intv[tim,:]
+t    = itemp[tim,:]
 
 zlev=0
 
@@ -186,10 +190,100 @@ bec = smooth(bec, window_len=10, window='hanning')
 
 
 
-
-for l in range(-1):
+sp=4
+#ly=16
+ly=-1
+for l in range(ly):
   count += 1
   bc =  ( (g*alpha)/theta_z ) * ( unot[l]*tnot[l]*dTdx + vnot[l]*tnot[l]*dTdy )
 
-plt.pcolor(x_roms,y_roms,bc);plt.colorbar();plt.show()
+#plt.pcolor(x_roms,y_roms,bc*10**(7), cmap=plt.get_cmap('seismic'), vmin=-0.5, vmax=0.5);plt.colorbar();
+#plt.quiver(x_roms[0:-1:sp, 0:-1:sp],y_roms[0:-1:sp, 0:-1:sp],u[ly,0:-1:sp, 0:-1:sp], v[ly,0:-1:sp, 0:-1:sp])
+#plt.show()
+
+
+lon1=x_roms.copy()
+lat1=y_roms.copy()
+
+for tim in [tim]:
+  sp=6
+  up=u[ly,:,:]
+  vp=v[ly,:,:]
+  uu=up
+  vv=vp
+#  val=np.sqrt((uu**2)+(vv**2))
+#  begindate=avgfile['ocean_time'].units[14:]
+#  begindate=dates.datestr2num(begindate)
+#  figdates=dates.num2date(begindate+time)
+  nlim=lat1.max()
+  slim=lat1.min()
+  wlim=lon1.min()
+  elim=lon1.max()
+  fig, ax1 = plt.subplots(figsize=(8,8))
+  map = Basemap(projection='cyl', llcrnrlat=slim, urcrnrlat=nlim,llcrnrlon=wlim, urcrnrlon=elim,resolution='l')
+  map.drawcoastlines(linewidth=0.25)
+  map.drawcountries(linewidth=0.25)
+  map.fillcontinents(color='silver',lake_color='white')
+  parallels = np.arange(-50,-9,3)
+  map.drawparallels(parallels,labels=[1,0,0,1], linewidth=0.0)
+  meridians = np.arange(-65,-15,4)
+  map.drawmeridians(meridians,labels=[1,0,0,1], linewidth=0.0)
+  map.readshapefile('/mnt/c/Users/Fernando/Desktop/shape_unid_fed/lim_unidade_federacao_a', 'lim_unidade_federacao_a')
+#  map.drawmapscale(-39., -24.5, -39, -24.5, 100, barstyle='fancy', fontsize = 8, yoffset=5000)
+  x_roms, y_roms = map(lon1,lat1)
+#
+  a=ax1.pcolor(x_roms,y_roms,bc*10**(7), cmap=plt.get_cmap('seismic'), vmin=-0.5, vmax=0.5)
+  ax1.quiver(x_roms[0:-1:sp, 0:-1:sp],y_roms[0:-1:sp, 0:-1:sp],uu[0:-1:sp, 0:-1:sp], vv[0:-1:sp, 0:-1:sp], alpha=1)
+#  ax1.contourf(x_roms,y_roms,h_roms,levels=[0,600],colors=('gainsboro'))
+#  plt.text(-49.5,-17,figdates[tim].strftime("%Y/%b/%d - %-I %p"), fontsize=10, fontweight='bold',
+#        bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 5})
+  divider = make_axes_locatable(ax1)
+  #cax = divider.append_axes("right", size="5%", pad=0.05)
+  cax = fig.add_axes([0.91, 0.3, 0.02, 0.38])
+  cbar=fig.colorbar(a, shrink=0.8, extend='both', ax=ax1, cax=cax)
+  cbar.ax.set_ylabel('$m^2s^{-3}$ ($10^{-7}$)', rotation=270)
+  cbar.ax.get_yaxis().labelpad = 11
+  cbar.ax.tick_params(labelsize=9)
+  text = cbar.ax.yaxis.label
+  font = matplotlib.font_manager.FontProperties(family='times new roman', style='normal', size=11)
+  text.set_font_properties(font)
+#
+#
+#
+#
+  left, bottom, width, height = [0.55, 0.17, 0.35, 0.35]
+  axins = fig.add_axes([left, bottom, width, height])
+#
+#
+  nlim=-16
+  slim=-24.5
+  wlim=-43
+  elim=-31
+#
+  map = Basemap(projection='cyl', llcrnrlat=slim, urcrnrlat=nlim,llcrnrlon=wlim, urcrnrlon=elim,resolution='l')
+  map.drawcoastlines(linewidth=0.25)
+  map.drawcountries(linewidth=0.25)
+  map.fillcontinents(color='silver',lake_color='white')
+  parallels = np.arange(-40,-15,1)
+  map.drawparallels(parallels,labels=[0,0,0,0], linewidth=0.0)
+  meridians = np.arange(-55,-20,1)
+  map.drawmeridians(meridians,labels=[0,0,0,0], linewidth=0.0)
+  map.readshapefile('/mnt/c/Users/Fernando/Desktop/shape_unid_fed/lim_unidade_federacao_a', 'lim_unidade_federacao_a')
+#
+#
+#  axins.pcolor(x_roms2,y_roms2, np.squeeze(val),vmin=val.min(),vmax=1.0)
+#  axins.contourf(x_roms2,y_roms2,h_roms2,levels=[0,20],colors=('gainsboro'))
+#  axins.quiver(x_roms2[0:-1:sp, 0:-1:sp],y_roms2[0:-1:sp, 0:-1:sp],uu[0:-1:sp, 0:-1:sp], vv[0:-1:sp, 0:-1:sp])
+  a=axins.pcolor(x_roms,y_roms,bc*10**(7), cmap=plt.get_cmap('seismic'), vmin=-0.5, vmax=0.5)
+  sp=10
+#  axins.quiver(x_roms[0:-1:sp, 0:-1:sp],y_roms[0:-1:sp, 0:-1:sp],uu[0:-1:sp, 0:-1:sp], vv[0:-1:sp, 0:-1:sp], alpha=1)
+  axins.contourf(x_roms,y_roms,h_roms,levels=[0,600],colors=('gainsboro'))
+#
+  mark_inset(ax1, axins, loc1=1, loc2=3, fc="none", ec="black")
+#
+#
+
+plt.savefig('EC_00.png', dpi=200, bbox_inches='tight', transparent=False)
+
+plt.show()
 
