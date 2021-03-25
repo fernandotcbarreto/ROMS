@@ -16,7 +16,9 @@ import matplotlib.patheffects as PathEffects
 #lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b22_00[2-9][0-9]*')) + sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b3_00[0-4][0-9]*'))
 
 
-lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1_0[0-9][0-9][0-9]*'))
+#lista = sorted(glob.glob('R:/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1_0[0-9][0-9][0-9]*'))
+
+lista = sorted(glob.glob('/mnt/share/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1_0[0-9][0-9][0-9]*'))
 
 avgfile = xr.open_mfdataset(lista, concat_dim='ocean_time')
 
@@ -318,7 +320,7 @@ uu,oo=np.meshgrid(x_roms[idxs,:], np.arange(0,len(s_r)))
 
 lind=depm[0,:]
 
-levels = np.arange(-0.5,0.5,0.1)
+levels = np.arange(-0.2,0.3,0.1)
 
 vm=vavg[8:10,::]
 vm=vm.mean(axis=0)
@@ -338,7 +340,7 @@ ax.plot(uu[0,:], lind, color='black', linewidth=1.5)
 #[txt.set_path_effects([PathEffects.withStroke(linewidth=3, foreground='w')]) for txt in clabels]
 cax = fig.add_axes([0.91, 0.3, 0.02, 0.38])
 cbar=fig.colorbar(yy, shrink=0.8, extend='both', ax=ax, cax=cax)
-cbar.ax.set_ylabel('Velocity(m/s)', rotation=270)
+cbar.ax.set_ylabel('Velocidade (m/s)', rotation=270)
 cbar.ax.get_yaxis().labelpad = 11
 cbar.ax.tick_params(labelsize=9)
 text = cbar.ax.yaxis.label
@@ -348,6 +350,6 @@ text.set_font_properties(font)
 ax.set_xlim([-40.5,-37.0])
 ax.set_ylim([-2000,0])
 ax.set_xlabel('Longitude (°)')
-ax.set_ylabel('Depth (m)')
+ax.set_ylabel('Profundidade (m)')
 plt.savefig('21.png', dpi=200, bbox_inches='tight', transparent=False)
 plt.show()

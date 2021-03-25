@@ -12,7 +12,9 @@ import xarray as xr
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
-lista = sorted(glob.glob('ocean_BRSE_his_b5_000[0-9]*'))
+#lista = sorted(glob.glob('ocean_BRSE_his_b5_000[0-9]*'))
+
+lista = sorted(glob.glob('/mnt/share/Modelos/BRSE_2014_2016/RESULTADOS/ocean_BRSE_his_b1_00[5-9][0-9]*'))
 
 avgfile = xr.open_mfdataset(lista, concat_dim='ocean_time')
 
@@ -35,7 +37,7 @@ etamax, ximax = sh2
 
 x_roms=x_roms[1:-1,1:-1]
 y_roms=y_roms[1:-1,1:-1]
-h_roms=h_roms[1:-1,1:-1]
+####h_roms=h_roms[1:-1,1:-1]
 
 
 
@@ -72,7 +74,8 @@ lonv=np.array(avgfile['lon_v'][:])
 lonu=np.array(avgfile['lon_u'][:])
 latu=np.array(avgfile['lat_u'][:])
 
-uavg=np.array(avgfile.u.isel(s_rho=lst).values)
+#uavg=np.array(avgfile.u.isel(s_rho=lst).values)
+uavg=np.array(avgfile.u.isel(s_rho=lst).groupby('ocean_time.month').mean().values)
 
 
 uavg = 0.5*(uavg[:,:,:,1:]+uavg[:,:,:,:-1])
@@ -86,7 +89,9 @@ latu=latu[1:-1,:]
 
 ##np.array(avgfile.u.isel(s_rho=lst).values)
 
-vavg=np.array(avgfile.v.isel(s_rho=lst).values)
+#vavg=np.array(avgfile.v.isel(s_rho=lst).values)
+vavg=np.array(avgfile.v.isel(s_rho=lst).groupby('ocean_time.month').mean().values)
+
 
 vavg = 0.5*(vavg[:,:,1:,:]+vavg[:,:,:-1,:])
 latv = 0.5*(latv[1:,:]+latv[:-1,:])
@@ -97,7 +102,11 @@ lonv=lonv[:,1:-1]
 latv=latv[:,1:-1]
 
 
-tempavg=np.array(avgfile.temp.isel(s_rho=lst).values)
+#tempavg=np.array(avgfile.temp.isel(s_rho=lst).values)
+
+tempavg=np.array(avgfile.temp.isel(s_rho=lst).groupby('ocean_time.month').mean().values)
+
+
 tempavg=tempavg[:,:,1:-1,1:-1]
 
 
