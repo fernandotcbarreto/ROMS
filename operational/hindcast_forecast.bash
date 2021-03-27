@@ -508,6 +508,8 @@ if [ $DoNest == TRUE ];then
   ./nesting_run_fore.bash $newini
 fi
 
+rmv=$(grep ININAME $newini | head -n 1 | tr -s ' '| sed "s/' '/''/g" | cut -d '=' -f3 | cut -d '.' -f1)
+rm ${rmv}*
 
 RST_FROM_HINDCAST=FALSE
 
