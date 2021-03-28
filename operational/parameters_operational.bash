@@ -25,8 +25,9 @@ numdays=7                          #numdays to run ROMS
 newini=ocean_in_forecast_ciclone.in                 #name of greatest .in file
 
 
+hisinterdad=12
 
-hisinterson=12   #hours interval for nested grid (important for nesting)
+hisinterson=6   #hours interval for nested grid (important for nesting)
 
 #son_grids=(azul_son_case1_newBAT_2_Mcu.nc azul_son_case2_newlm.nc)  #name of son grids seperated by space ex: son_grids=(son1.nc son2.nc)
 
