@@ -283,7 +283,7 @@ sed -i "0,/LnudgeTCLM ==.*/{s/LnudgeTCLM ==.*/LnudgeTCLM == T T/}" ${newini}   #
 fi
 
 
-./romsS	< $newini
+mpirun -n 8 ./romsM  $newini
 
 
 ./nesting_run_fore.bash $newini

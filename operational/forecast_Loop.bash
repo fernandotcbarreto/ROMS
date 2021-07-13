@@ -8,9 +8,10 @@ source parameters_operational.bash
 nameini=operational_in.in                              
 rstday=1.
 
+numdays=$(($numdays + $dly))
 
-inig=0
-endg=$(($numdays + 1))
+inig=$((0 -$dly))
+endg=$(($numdays + 1 -$dly))
 
 inim=$inig         # always 1 minus gfs
 endm=$(($endg-1))  #simulation will start at 12 PM, mercator reference
@@ -83,7 +84,6 @@ mv MYOCEAN* $mercatordata
 ################ MAKE ATM BOUNDARY CONDITIONS
 cd ${gfsdata}
 
-foratm='/home/fernando/roms/src/Projects/operational/rotinas_boundary_initial/gfs/'
 cp ${foratm}* .
 
 for filename in `ls GFS_F*`; do
@@ -209,6 +209,16 @@ sed -i "0,/NHIS ==.*/{s/NHIS ==.*/NHIS == ${sizegrid[4]}/}" ${newini}
 
 sed -i "0,/NDEFHIS ==.*/{s/NDEFHIS ==.*/NDEFHIS == 0 /}" ${newini}     #only 1 file and no 0001-10 add to his name
 
+INI_REFST=`date --date "$inig days" +%Y-%m-%d`
+ff=`echo $INI_REFST 12:00:00`
+tide_dt=($(
+python - <<EOF
+from matplotlib import dates
+print(dates.datestr2num('$ff') - dates.datestr2num('$tide_st'))
+EOF
+))
+sed -i "0,/TIDE_START =.*/{s/TIDE_START =.*/TIDE_START = -${tide_dt}d0/}" ${newini}
+
 
 sed -i "0,/LcycleRST ==.*/{s/LcycleRST ==.*/LcycleRST == F/}" ${newini}      #Need all restarts
 
@@ -269,14 +279,15 @@ sed -i "0,/LnudgeTCLM ==.*/{s/LnudgeTCLM ==.*/LnudgeTCLM == T T/}" ${newini}   #
 fi
 
 
-./romsS	< $newini
+#mpirun --hostfile /home/fernandotcbarreto/atlasul_operational_noAS/hostfile -np 8 ./romsM  $newini
+mpirun -np 4 ./romsM  $newini > log_mpirun
 
 if [ $DoNest == TRUE ];then
   ./nesting_run_fore.bash $newini
 fi
 
 rmv=$(grep ININAME $newini | head -n 1 | tr -s ' '| sed "s/' '/''/g" | cut -d '=' -f3 | cut -d '.' -f1)
-rm ${rmv}*
+#rm ${rmv}*
 
 
 

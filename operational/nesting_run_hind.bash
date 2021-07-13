@@ -22,7 +22,9 @@ echo ${DTSON[$(($j-1))]}   $ bash array begins at 0
 ./hindcast_NEST.bash $fatherin $sonin $nestson $j ${DTSON[$(($j-1))]}
 #read -p "$*"  #pause        
 echo RUNNING CASE $sonin
-./romsS < $sonin
+#mpirun --hostfile /home/fernandotcbarreto/atlasul_operational_noAS/hostfile -np 8 ./romsM $sonin
+#./romsS < $sonin
+mpirun -np 4 ./romsM_tide $sonin
 #read -p "$*"  #pause
 done
 

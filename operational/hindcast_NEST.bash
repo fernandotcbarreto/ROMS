@@ -67,6 +67,9 @@ if [ $NUDGECLIM == TRUE ];then
   sed -i "0,/NUDNAME.*/{s@NUDNAME.*@NUDNAME == ${!var} @}" ${nestin1}
 fi
 
+var="visc2_${ind}"
+sed -i "0,/VISC2.*/{s@VISC2.*@VISC2 == ${!var}.0d0 @}" ${nestin1}
+
 mv $nestin1 $maindir
 
 cd ..

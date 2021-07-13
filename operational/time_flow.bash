@@ -9,7 +9,7 @@ while :; do
 
   echo $current_time
 
-  if [[ $current_time > "20:00" ]] && [[ $current_time < "20:30" ]]; then 
+  if [[ $current_time > "08:00" ]] && [[ $current_time < "09:01" ]]; then 
 #   echo 5555
 
     if [[ $countdays = 7 ]]; then
