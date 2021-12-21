@@ -24,7 +24,8 @@ echo ${DTSON[$(($j-1))]}   $ bash array begins at 0
 echo RUNNING CASE $sonin
 #mpirun --hostfile /home/fernandotcbarreto/atlasul_operational_noAS/hostfile -np 8 ./romsM $sonin
 #./romsS < $sonin
-mpirun -np 4 ./romsM_tide $sonin
+#mpirun -np 4 ./romsM_tide_nr_lmd $sonin
+mpirun -np 4 ./romsM $sonin
 #read -p "$*"  #pause
 done
 

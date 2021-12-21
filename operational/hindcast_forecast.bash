@@ -132,7 +132,14 @@ boundtime=`date --date "$inim days" +%Y%m%d`
 
  sed -i "0,/cutted=.*/{s@cutted=.*@cutted=$cuttedidM@}" parameters_bry_in.py
 
-
+ sed -i "0,/theta_b=.*/{s@theta_b=.*@theta_b=$theta_b@}" parameters_bry_in.py
+ sed -i "0,/theta_s=.*/{s@theta_s=.*@theta_s=$theta_s@}" parameters_bry_in.py
+ sed -i "0,/tcline=.*/{s@tcline=.*@tcline=$tcline@}" parameters_bry_in.py
+ sed -i "0,/klevels=.*/{s@klevels=.*@klevels=$klevels@}" parameters_bry_in.py
+ sed -i "0,/Vtransform=.*/{s@Vtransform=.*@Vtransform=$Vtransform@}" parameters_bry_in.py
+ sed -i "0,/Vstretching=.*/{s@Vstretching=.*@Vstretching=$Vstretching@}" parameters_bry_in.py 
+ 
+  
 python myocean_2_roms_bry_cut.py
 python myocean_2_roms_ini.py
 
@@ -239,10 +246,25 @@ sed -i "0,/LnudgeTCLM ==.*/{s/LnudgeTCLM ==.*/LnudgeTCLM == T T/}" ${newini}   #
 fi
 
 
+ sed -i "0,/Vstretching.*/{s@Vstretching.*@Vstretching == $Vstretching@}" ${newini}
+ 
+ sed -i "0,/Vtransform.*/{s@Vtransform.*@Vtransform == $Vtransform@}" ${newini}
+ 
+ sed -i "0,/THETA_S.*/{s@THETA_S.*@THETA_S == ${theta_s}@}" ${newini}
+
+ sed -i "0,/THETA_B.*/{s@THETA_B.*@THETA_B == ${theta_b}@}" ${newini}
+
+ sed -i "0,/TCLINE.*/{s@TCLINE.*@TCLINE == ${tcline}@}" ${newini}
+
+ sed -i "0,/N ==.*/{s@N ==.*@N == ${klevels}@}" ${newini} 
+ 
+ 
 
 #mpirun --hostfile /home/fernandotcbarreto/atlasul_operational_noAS/hostfile -np 8 ./romsM  $newini
 #./romsS < $newini
+#mpirun -np 4 ./romsM_lm  $newini > log_mpirun
 mpirun -np 4 ./romsM  $newini > log_mpirun
+#mpirun -np 4 ./romsM_bio  $newini
 
 
 if [ $DoNest == TRUE ];then
@@ -382,6 +404,12 @@ boundtime=`date --date "$inim days" +%Y%m%d`
 
  sed -i "0,/cutted=.*/{s@cutted=.*@cutted=$cuttedidM@}" parameters_bry_in.py
 
+ sed -i "0,/theta_b=.*/{s@theta_b=.*@theta_b=$theta_b@}" parameters_bry_in.py
+ sed -i "0,/theta_s=.*/{s@theta_s=.*@theta_s=$theta_s@}" parameters_bry_in.py
+ sed -i "0,/tcline=.*/{s@tcline=.*@tcline=$tcline@}" parameters_bry_in.py
+ sed -i "0,/klevels=.*/{s@klevels=.*@klevels=$klevels@}" parameters_bry_in.py
+ sed -i "0,/Vtransform=.*/{s@Vtransform=.*@Vtransform=$Vtransform@}" parameters_bry_in.py
+ sed -i "0,/Vstretching=.*/{s@Vstretching=.*@Vstretching=$Vstretching@}" parameters_bry_in.py 
 
 python myocean_2_roms_bry_cut.py
 
@@ -525,15 +553,29 @@ sed -i "0,/LnudgeTCLM ==.*/{s/LnudgeTCLM ==.*/LnudgeTCLM == T T/}" ${newini}   #
 fi
 
 
+ sed -i "0,/Vstretching.*/{s@Vstretching.*@Vstretching == $Vstretching@}" ${newini}
+ 
+ sed -i "0,/Vtransform.*/{s@Vtransform.*@Vtransform == $Vtransform@}" ${newini}
+ 
+ sed -i "0,/THETA_S.*/{s@THETA_S.*@THETA_S == ${theta_s}@}" ${newini}
+
+ sed -i "0,/THETA_B.*/{s@THETA_B.*@THETA_B == ${theta_b}@}" ${newini}
+
+ sed -i "0,/TCLINE.*/{s@TCLINE.*@TCLINE == ${tcline}@}" ${newini}
+
+ sed -i "0,/N ==.*/{s@N ==.*@N == ${klevels}@}" ${newini} 
+
 #mpirun --hostfile /home/fernandotcbarreto/atlasul_operational_noAS/hostfile -np 8 ./romsM  $newini
+#mpirun -np 4 ./romsM_lm  $newini
 mpirun -np 4 ./romsM  $newini
+#mpirun -np 4 ./romsM_bio  $newini
 
 if [ $DoNest == TRUE ];then
   ./nesting_run_fore.bash $newini
 fi
 
 rmv=$(grep ININAME $newini | head -n 1 | tr -s ' '| sed "s/' '/''/g" | cut -d '=' -f3 | cut -d '.' -f1)
-rm ${rmv}*
+#rm ${rmv}*
 
 RST_FROM_HINDCAST=FALSE
 

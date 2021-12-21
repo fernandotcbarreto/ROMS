@@ -52,6 +52,21 @@ sed -i "0,/cutted=.*/{s@cutted=.*@cutted=$cuttedid@}" parameters_bry_in.py
 
 sed -i "0,/lim=.*/{s@lim=.*@lim=$lim@}" parameters_bry_in.py
 
+theta_b="theta_b_${ind}"
+theta_s="theta_s_${ind}"
+tcline="tcline_${ind}"
+klevels="klevels_${ind}"
+Vtransform="Vtransform_${ind}"
+Vstretching="Vstretching_${ind}"
+
+
+ sed -i "0,/theta_b=.*/{s@theta_b=.*@theta_b=${!theta_b}@}" parameters_bry_in.py
+ sed -i "0,/theta_s=.*/{s@theta_s=.*@theta_s=${!theta_s}@}" parameters_bry_in.py
+ sed -i "0,/tcline=.*/{s@tcline=.*@tcline=${!tcline}@}" parameters_bry_in.py
+ sed -i "0,/klevels=.*/{s@klevels=.*@klevels=${!klevels}@}" parameters_bry_in.py
+ sed -i "0,/Vtransform=.*/{s@Vtransform=.*@Vtransform=${!Vtransform}@}" parameters_bry_in.py
+ sed -i "0,/Vstretching=.*/{s@Vstretching=.*@Vstretching=${!Vstretching}@}" parameters_bry_in.py  
+ 
 
 python roms_2_roms_bry_cut.py
 python roms_2_roms_ini.py
@@ -144,5 +159,18 @@ if [ $NUDGECLIM == FALSE ];then
   sed -i "0,/LnudgeM3CLM ==.*/{s/LnudgeM3CLM ==.*/LnudgeM3CLM == F/}" ${nestin1}   #only need last restart
   sed -i "0,/LnudgeTCLM ==.*/{s/LnudgeTCLM ==.*/LnudgeTCLM == F F/}" ${nestin1}   #only need last restart
 fi
+
+
+ sed -i "0,/Vstretching.*/{s@Vstretching.*@Vstretching == ${!Vstretching}@}" ${nestin1}
+ 
+ sed -i "0,/Vtransform.*/{s@Vtransform.*@Vtransform == ${!Vtransform}@}" ${nestin1}
+ 
+ sed -i "0,/THETA_S.*/{s@THETA_S.*@THETA_S == ${!theta_s}@}" ${nestin1}
+
+ sed -i "0,/THETA_B.*/{s@THETA_B.*@THETA_B == ${!theta_b}@}" ${nestin1}
+
+ sed -i "0,/TCLINE.*/{s@TCLINE.*@TCLINE == ${!tcline}@}" ${nestin1}
+
+ sed -i "0,/N ==.*/{s@N ==.*@N == ${!klevels}@}" ${nestin1} 
 
 

@@ -25,7 +25,8 @@ echo PRESS ENTER TO BEGIN RUN
 #read -p "$*"  #pause
 #mpirun --hostfile /home/fernandotcbarreto/atlasul_operational_noAS/hostfile -np 8 ./romsM $sonin
 #./romsS < $sonin
-mpirun -np 4 ./romsM_tide_nr $sonin
+#mpirun -np 4 ./romsM_tide_nr_lmd $sonin  > log_nest
+mpirun -np 4 ./romsM $sonin  > log_nest
 #read -p "$*"  #pause
 done
 
