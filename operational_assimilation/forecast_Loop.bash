@@ -84,7 +84,7 @@ mv MYOCEAN* $mercatordata
 ################ MAKE ATM BOUNDARY CONDITIONS
 cd ${gfsdata}
 
-foratm='/home/fernando/roms/src/Projects/operational/rotinas_boundary_initial/gfs/'
+#foratm='/home/fernando/roms/src/Projects/operational/rotinas_boundary_initial/gfs/'
 cp ${foratm}* .
 
 for filename in `ls GFS_F*`; do
@@ -136,6 +136,15 @@ boundtime=`date --date "$inim days" +%Y%m%d`
  sed -i "0,/cutted=.*/{s@cutted=.*@cutted=True@}" parameters_bry_in.py
 
 
+
+
+ sed -i "0,/theta_b=.*/{s@theta_b=.*@theta_b=$theta_b@}" parameters_bry_in.py
+ sed -i "0,/theta_s=.*/{s@theta_s=.*@theta_s=$theta_s@}" parameters_bry_in.py
+ sed -i "0,/tcline=.*/{s@tcline=.*@tcline=$tcline@}" parameters_bry_in.py
+ sed -i "0,/klevels=.*/{s@klevels=.*@klevels=$klevels@}" parameters_bry_in.py
+ sed -i "0,/Vtransform=.*/{s@Vtransform=.*@Vtransform=$Vtransform@}" parameters_bry_in.py
+ sed -i "0,/Vstretching=.*/{s@Vstretching=.*@Vstretching=$Vstretching@}" parameters_bry_in.py 
+ 
 python myocean_2_roms_bry_cut.py
 
 if [ $NUDGECLIM == TRUE ];then
@@ -280,7 +289,20 @@ sed -i "0,/LnudgeTCLM ==.*/{s/LnudgeTCLM ==.*/LnudgeTCLM == T T/}" ${newini}   #
 fi
 
 
-./romsS	< $newini
+ sed -i "0,/Vstretching.*/{s@Vstretching.*@Vstretching == $Vstretching@}" ${newini}
+ 
+ sed -i "0,/Vtransform.*/{s@Vtransform.*@Vtransform == $Vtransform@}" ${newini}
+ 
+ sed -i "0,/THETA_S.*/{s@THETA_S.*@THETA_S == ${theta_s}@}" ${newini}
+
+ sed -i "0,/THETA_B.*/{s@THETA_B.*@THETA_B == ${theta_b}@}" ${newini}
+
+ sed -i "0,/TCLINE.*/{s@TCLINE.*@TCLINE == ${tcline}@}" ${newini}
+
+ sed -i "0,/N ==.*/{s@N ==.*@N == ${klevels}@}" ${newini} 
+ 
+
+mpirun -np 4 ./romsM  $newini
 
 
 rm *outer0.nc
@@ -428,6 +450,16 @@ boundtime=`date --date "$inim days" +%Y%m%d`
  sed -i "0,/cutted=.*/{s@cutted=.*@cutted=True@}" parameters_bry_in.py
 
 
+
+ sed -i "0,/theta_b=.*/{s@theta_b=.*@theta_b=$theta_b@}" parameters_bry_in.py
+ sed -i "0,/theta_s=.*/{s@theta_s=.*@theta_s=$theta_s@}" parameters_bry_in.py
+ sed -i "0,/tcline=.*/{s@tcline=.*@tcline=$tcline@}" parameters_bry_in.py
+ sed -i "0,/klevels=.*/{s@klevels=.*@klevels=$klevels@}" parameters_bry_in.py
+ sed -i "0,/Vtransform=.*/{s@Vtransform=.*@Vtransform=$Vtransform@}" parameters_bry_in.py
+ sed -i "0,/Vstretching=.*/{s@Vstretching=.*@Vstretching=$Vstretching@}" parameters_bry_in.py 
+ 
+ 
+ 
 python myocean_2_roms_bry_cut.py
 
 if [ $NUDGECLIM == TRUE ];then
@@ -570,6 +602,20 @@ sed -i "0,/LnudgeM2CLM ==.*/{s/LnudgeM2CLM ==.*/LnudgeM2CLM == T/}" ${newini}   
 sed -i "0,/LnudgeM3CLM ==.*/{s/LnudgeM3CLM ==.*/LnudgeM3CLM == T/}" ${newini}   #only need last restart
 sed -i "0,/LnudgeTCLM ==.*/{s/LnudgeTCLM ==.*/LnudgeTCLM == T T/}" ${newini}   #only need last restart
 fi
+
+
+
+ sed -i "0,/Vstretching.*/{s@Vstretching.*@Vstretching == $Vstretching@}" ${newini}
+ 
+ sed -i "0,/Vtransform.*/{s@Vtransform.*@Vtransform == $Vtransform@}" ${newini}
+ 
+ sed -i "0,/THETA_S.*/{s@THETA_S.*@THETA_S == ${theta_s}@}" ${newini}
+
+ sed -i "0,/THETA_B.*/{s@THETA_B.*@THETA_B == ${theta_b}@}" ${newini}
+
+ sed -i "0,/TCLINE.*/{s@TCLINE.*@TCLINE == ${tcline}@}" ${newini}
+
+ sed -i "0,/N ==.*/{s@N ==.*@N == ${klevels}@}" ${newini} 
 
 
 ./romsS	< $newini

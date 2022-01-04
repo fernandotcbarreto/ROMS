@@ -2,9 +2,10 @@ source parameters_operational.bash
 
 BEGINRUN=TRUE
 
+#print($numdays - 0.5)
 numdaysrun=($(
 python - <<EOF
-print($numdays - 0.5)
+print($numdays - 0.5 -$dly - $numdaysas)
 EOF
 ))
 
@@ -137,6 +138,13 @@ boundtime=`date --date "$inim days" +%Y%m%d`
  sed -i "0,/cutted=.*/{s@cutted=.*@cutted=True@}" parameters_bry_in.py
 
 
+ sed -i "0,/theta_b=.*/{s@theta_b=.*@theta_b=$theta_b@}" parameters_bry_in.py
+ sed -i "0,/theta_s=.*/{s@theta_s=.*@theta_s=$theta_s@}" parameters_bry_in.py
+ sed -i "0,/tcline=.*/{s@tcline=.*@tcline=$tcline@}" parameters_bry_in.py
+ sed -i "0,/klevels=.*/{s@klevels=.*@klevels=$klevels@}" parameters_bry_in.py
+ sed -i "0,/Vtransform=.*/{s@Vtransform=.*@Vtransform=$Vtransform@}" parameters_bry_in.py
+ sed -i "0,/Vstretching=.*/{s@Vstretching=.*@Vstretching=$Vstretching@}" parameters_bry_in.py 
+ 
 python myocean_2_roms_bry_cut.py
 
 
@@ -266,8 +274,21 @@ sed -i "0,/LnudgeTCLM ==.*/{s/LnudgeTCLM ==.*/LnudgeTCLM == T T/}" ${newini}   #
 fi
 
 
+ sed -i "0,/Vstretching.*/{s@Vstretching.*@Vstretching == $Vstretching@}" ${newini}
+ 
+ sed -i "0,/Vtransform.*/{s@Vtransform.*@Vtransform == $Vtransform@}" ${newini}
+ 
+ sed -i "0,/THETA_S.*/{s@THETA_S.*@THETA_S == ${theta_s}@}" ${newini}
 
-./romsS	< $newini
+ sed -i "0,/THETA_B.*/{s@THETA_B.*@THETA_B == ${theta_b}@}" ${newini}
+
+ sed -i "0,/TCLINE.*/{s@TCLINE.*@TCLINE == ${tcline}@}" ${newini}
+
+ sed -i "0,/N ==.*/{s@N ==.*@N == ${klevels}@}" ${newini} 
+ 
+ 
+
+mpirun -np 4 ./romsM  $newini
 
 if [ $DoNest == TRUE ];then
   ./nesting_run_hind.bash $newini
@@ -403,7 +424,20 @@ sed -i "0,/LnudgeTCLM ==.*/{s/LnudgeTCLM ==.*/LnudgeTCLM == T T/}" ${newini}   #
 fi
 
 
-./romsS	< $newini
+ sed -i "0,/Vstretching.*/{s@Vstretching.*@Vstretching == $Vstretching@}" ${newini}
+ 
+ sed -i "0,/Vtransform.*/{s@Vtransform.*@Vtransform == $Vtransform@}" ${newini}
+ 
+ sed -i "0,/THETA_S.*/{s@THETA_S.*@THETA_S == ${theta_s}@}" ${newini}
+
+ sed -i "0,/THETA_B.*/{s@THETA_B.*@THETA_B == ${theta_b}@}" ${newini}
+
+ sed -i "0,/TCLINE.*/{s@TCLINE.*@TCLINE == ${tcline}@}" ${newini}
+
+ sed -i "0,/N ==.*/{s@N ==.*@N == ${klevels}@}" ${newini} 
+ 
+ 
+mpirun -np 4 ./romsM  $newini
 
 rm *outer0.nc
 rnm=$(grep HISNAME $newini | head -n 1 | tr -s ' '| sed "s/' '/''/g" | cut -d '=' -f3 | cut -d '.' -f1)
@@ -550,6 +584,14 @@ boundtime=`date --date "$inim days" +%Y%m%d`
  sed -i "0,/cutted=.*/{s@cutted=.*@cutted=True@}" parameters_bry_in.py
 
 
+ sed -i "0,/theta_b=.*/{s@theta_b=.*@theta_b=$theta_b@}" parameters_bry_in.py
+ sed -i "0,/theta_s=.*/{s@theta_s=.*@theta_s=$theta_s@}" parameters_bry_in.py
+ sed -i "0,/tcline=.*/{s@tcline=.*@tcline=$tcline@}" parameters_bry_in.py
+ sed -i "0,/klevels=.*/{s@klevels=.*@klevels=$klevels@}" parameters_bry_in.py
+ sed -i "0,/Vtransform=.*/{s@Vtransform=.*@Vtransform=$Vtransform@}" parameters_bry_in.py
+ sed -i "0,/Vstretching=.*/{s@Vstretching=.*@Vstretching=$Vstretching@}" parameters_bry_in.py 
+ 
+ 
 python myocean_2_roms_bry_cut.py
 
 if [ $NUDGECLIM == TRUE ];then
@@ -692,6 +734,19 @@ sed -i "0,/LnudgeM2CLM ==.*/{s/LnudgeM2CLM ==.*/LnudgeM2CLM == T/}" ${newini}   
 sed -i "0,/LnudgeM3CLM ==.*/{s/LnudgeM3CLM ==.*/LnudgeM3CLM == T/}" ${newini}   #only need last restart
 sed -i "0,/LnudgeTCLM ==.*/{s/LnudgeTCLM ==.*/LnudgeTCLM == T T/}" ${newini}   #only need last restart
 fi
+
+
+ sed -i "0,/Vstretching.*/{s@Vstretching.*@Vstretching == $Vstretching@}" ${newini}
+ 
+ sed -i "0,/Vtransform.*/{s@Vtransform.*@Vtransform == $Vtransform@}" ${newini}
+ 
+ sed -i "0,/THETA_S.*/{s@THETA_S.*@THETA_S == ${theta_s}@}" ${newini}
+
+ sed -i "0,/THETA_B.*/{s@THETA_B.*@THETA_B == ${theta_b}@}" ${newini}
+
+ sed -i "0,/TCLINE.*/{s@TCLINE.*@TCLINE == ${tcline}@}" ${newini}
+
+ sed -i "0,/N ==.*/{s@N ==.*@N == ${klevels}@}" ${newini} 
 
 
 ./romsS	< $newini
