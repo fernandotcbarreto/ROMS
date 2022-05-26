@@ -5,8 +5,8 @@ xmax=-30
 ymin=-40
 ymax=-15
 
-username='fbarreto'
-password='Mg05031990*'
+username='yourusrn'
+password=yourpass'
 
         ano=`date --date 'today' +%Y`
         mes=`date --date 'today' +%m`
