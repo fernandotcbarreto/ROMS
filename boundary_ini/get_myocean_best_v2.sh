@@ -5,8 +5,8 @@ xmax=-30
 ymin=-40
 ymax=-15
 
-username='fbarreto'
-password='Mg05031990*'
+username='yourusrnm'
+password='yourpass'
 for ((  i = -7;  i <=0 ;  i++  ))
 do
         ano=`date --date 'today' +%Y`
